@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./styles.css";
-import TasterButton from "./components/TasterButton";
+import { useNavigate } from 'react-router-dom'
 
 const DAY_VIDEO_SRC = "videos/day-screen.mp4";
 const NIGHT_VIDEO_SRC = "videos/night-screen.mp4";
@@ -20,6 +20,8 @@ export default function App() {
   const bgVideoRef = useRef(null);
   const screenVideoRef = useRef(null);
   const filmScrollRef = useRef(null);
+
+const navigate = useNavigate()
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [filmContent, setFilmContent] = useState(null);
@@ -200,17 +202,12 @@ export default function App() {
           <span className="taster-label" style={{ "--x": "37.7%", "--y": "50%" }}>правила</span>
 
           {/* ── taster: призовые — x:13.6% y:57.5% ── */}
-
-          <TasterButton
-            id="prizy"
-            x="13.6%"
-            y="57.5%"
-            labelY="64.5%"
-            label="призовые"
-            ariaLabel="Призовые"
-            pressedBtn={pressedBtn}
-            pointerHandlers={pointerHandlers}
-            onClick={() => openFilm(
+           <button
+      className={`taster-btn${pressedBtn === "prizy" ? " is-pressed" : ""}`}
+      style={{ "--x": "13.6%", "--y": "57.5%" }}
+      aria-label="Призовые"
+      {...pointerHandlers("prizy")}
+      onClick={() => openFilm(
               <span dangerouslySetInnerHTML={{
                 __html: `<u>ПРИЗОВЫЕ</u><br><br>
 0.49 - <span style='color:#da6a1b;'>не коммерческий проект</span> и полностью держится на энтузиазме организатора, который одновременно выступает дизайнером, администратором и меценатом проекта.<br><br>
@@ -222,7 +219,10 @@ export default function App() {
 3 место - 100€<br><br>
 Лучший трек раунда - 30€` }} />
             )}
-          />
+    />
+    <span className="taster-label" style={{ "--x": "13.6%", "--y": "64.5%"}}>
+      призовые"
+    </span>
 
           {/* ── taster: судьи — data-film-source="judgesContent" ── */}
           <button
@@ -326,6 +326,13 @@ export default function App() {
           >
             Datenschutz
           </button>
+          <button
+      className="footer-modal-link"
+      type="button"
+      onClick={() => navigate("/admin")}
+    >
+      Admin
+    </button>
         </div>
       </footer>
 
