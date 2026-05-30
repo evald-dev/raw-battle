@@ -221,7 +221,7 @@ const navigate = useNavigate()
             )}
     />
     <span className="taster-label" style={{ "--x": "13.6%", "--y": "64.5%"}}>
-      призовые"
+      призовые
     </span>
 
           {/* ── taster: судьи — data-film-source="judgesContent" ── */}
