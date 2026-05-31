@@ -208,7 +208,10 @@ export default function Tabelle() {
                   }
                   <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase text-center">{j.name}</div>
                   <div className="font-[Montserrat] text-[10px] text-[rgba(245,232,207,0.4)]">
-                    {participants.filter(p => scores[`${p.id}_${j.id}`]?.score !== undefined && scores[`${p.id}_${j.id}`]?.score !== "").length}/{participants.length}
+                    {participants.filter(p => {
+  const val = scores[`${p.id}_${j.id}`]?.score;
+  return val !== null && val !== undefined && val !== "";
+}).length}/{participants.length}
                   </div>
                 </div>
               ))}
