@@ -125,6 +125,9 @@ export default function Judge() {
   }
 
   async function saveScore(participantId, value) {
+    console.log("judgeId aus Auth:", judgeId);
+    console.log("participantId:", participantId);
+    console.log("activeRound:", activeRound);
     const existing = scores[participantId];
     const newScores = { ...scores, [participantId]: { ...existing, score: value } };
     setScores(newScores);
