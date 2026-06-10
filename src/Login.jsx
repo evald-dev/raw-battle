@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { getMyRole } from "./supabase";
 import "./styles.css";
 
 export default function Login() {
@@ -13,17 +14,23 @@ export default function Login() {
   const [loading,  setLoading]  = useState(false);
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    const err = await signIn(email, password);
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
+  const err = await signIn(email, password);
+  console.log("signIn error:", err);
+  if (err) {
+    setError("Неверный email или пароль");
     setLoading(false);
-    if (err) {
-      setError("Неверный email или пароль");
-      return;
-    }
-    navigate("/");
+    return;
   }
+  const role = await getMyRole();
+  console.log("role nach login:", role);
+  setLoading(false);
+  if (role === "admin") navigate("/admin");
+  else if (role === "judge") navigate("/judge");
+  else navigate("/");
+}
 
   return (
     <>

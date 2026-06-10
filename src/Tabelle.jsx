@@ -9,7 +9,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── Hintergrundfarbe ──────────────────────────────────────────────────────
 const BG = "bg-[oklch(26.9%_0_0/0.8)]";
+
+const RANK_COLORS = {
+  1: { border: "border-[rgba(255,200,0,0.5)]",   text: "text-[#ffc800]", bg: "bg-[rgba(255,200,0,0.08)]" },
+  2: { border: "border-[rgba(180,180,180,0.5)]", text: "text-[#b4b4b4]", bg: "bg-[rgba(180,180,180,0.06)]" },
+  3: { border: "border-[rgba(180,100,30,0.5)]",  text: "text-[#b4641e]", bg: "bg-[rgba(180,100,30,0.08)]" },
+};
+
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────
+function truncateName(name, max = 12) {
+  if (!name) return "";
+  return name.length > max ? name.slice(0, max) + "…" : name;
+}
+
 function scoreColor(score, isKnockout) {
   if (score === null || score === undefined || score === "") return "";
   const n = Number(score);
@@ -28,6 +40,7 @@ export default function Tabelle() {
   const [participants, setParticipants] = useState([]);
   const [judges,       setJudges]       = useState([]);
   const [scores,       setScores]       = useState({});
+  const [favorites,    setFavorites]    = useState({}); // { judgeId_rank: participantId }
   const [roundInfo,    setRoundInfo]    = useState(null);
   const [loading,      setLoading]      = useState(true);
   const [sorted,       setSorted]       = useState(false);
@@ -58,11 +71,13 @@ export default function Tabelle() {
       { data: participantData },
       { data: judgeData },
       { data: scoreData },
+      { data: favData },
     ] = await Promise.all([
       supabase.from("rounds").select("*").eq("id", roundId).single(),
       supabase.from("participants").select("*").eq("round_id", roundId).order("order_num"),
       supabase.from("judges").select("*").order("order_num"),
       supabase.from("scores").select("*").eq("round_id", roundId),
+      supabase.from("favorites").select("*").eq("round_id", roundId),
     ]);
     setRoundInfo(roundData);
     setParticipants(participantData || []);
@@ -72,6 +87,11 @@ export default function Tabelle() {
       scoreMap[`${s.participant_id}_${s.judge_id}`] = { score: s.score, comment: s.comment || "" };
     });
     setScores(scoreMap);
+    const favMap = {};
+    (favData || []).forEach(f => {
+      favMap[`${f.judge_id}_${f.rank}`] = f.participant_id;
+    });
+    setFavorites(favMap);
     setLoading(false);
   }
 
@@ -85,25 +105,6 @@ export default function Tabelle() {
   function getSortedParticipants() {
     if (!sorted) return participants;
     return [...participants].sort((a, b) => totalScore(b.id) - totalScore(a.id));
-  }
-
-  async function saveScore(participantId, judgeId, value) {
-    const existing = scores[`${participantId}_${judgeId}`];
-    setScores(prev => ({ ...prev, [`${participantId}_${judgeId}`]: { ...prev[`${participantId}_${judgeId}`], score: value } }));
-    await supabase.from("scores").upsert({
-      round_id: activeRound, participant_id: participantId, judge_id: judgeId,
-      score: value, comment: existing?.comment || "",
-    }, { onConflict: "round_id,participant_id,judge_id" });
-  }
-
-  async function saveComment(participantId, judgeId, comment) {
-    const existing = scores[`${participantId}_${judgeId}`];
-    setScores(prev => ({ ...prev, [`${participantId}_${judgeId}`]: { ...prev[`${participantId}_${judgeId}`], comment } }));
-    await supabase.from("scores").upsert({
-      round_id: activeRound, participant_id: participantId, judge_id: judgeId,
-      score: existing?.score ?? null, comment,
-    }, { onConflict: "round_id,participant_id,judge_id" });
-    setCommentModal(null);
   }
 
   const isKnockout = roundInfo?.type === "knockout";
@@ -198,33 +199,14 @@ export default function Tabelle() {
               </div>
             )}
 
-            {/* ── Richter-Header ── */}
-            <div className="flex gap-3 mb-4 flex-wrap">
-              {judges.map(j => (
-                <div key={j.id} className={`flex flex-col items-center gap-1.5 px-3.5 py-2.5 ${BG} border border-white/[0.12] rounded-lg min-w-[80px]`}>
-                  {j.avatar_url
-                    ? <img src={j.avatar_url} alt={j.name} className="w-[42px] h-[42px] rounded-full object-cover border-2 border-[#d94b6a]" />
-                    : <div className="w-[42px] h-[42px] rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-base font-bold text-[#d94b6a] font-[Montserrat]">{j.name[0]}</div>
-                  }
-                  <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase text-center">{j.name}</div>
-                  <div className="font-[Montserrat] text-[10px] text-[rgba(245,232,207,0.4)]">
-                    {participants.filter(p => {
-  const val = scores[`${p.id}_${j.id}`]?.score;
-  return val !== null && val !== undefined && val !== "";
-}).length}/{participants.length}
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* ── Sortier-Button ── */}
             {!isKnockout && (
               <button
                 onClick={() => setSorted(s => !s)}
                 className={`mb-4 px-4 py-2 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all duration-150 block
                   ${sorted
-                    ? "border-[#d94b6a] text-[#d94b6a] bg-[rgba(217,75)]"
-                    : `border-white/[0.15] text-[rgba(245,232,207)] ${BG} hover:text-[#f5e8cf] hover:border-white/30 hover:bg-white/[0.1]`
+                    ? "border-[#d94b6a] text-[#d94b6a] bg-[rgba(217,75,106,0.1)]"
+                    : `border-white/[0.15] text-[rgba(245,232,207,0.5)] ${BG} hover:text-[#f5e8cf] hover:border-white/30 hover:bg-white/[0.1]`
                   }`}
               >
                 {sorted ? "✕ Сортировка отключена" : "↓ Сортировать по баллам"}
@@ -233,24 +215,32 @@ export default function Tabelle() {
 
             {/* ── Tabelle ── */}
             <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
-              <table className="w-full border-collapse font-[Montserrat] min-w-[500px]">
+              <table className="w-full border-collapse table-fixed font-[Montserrat] min-w-[500px]">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207)] font-bold text-left whitespace-nowrap">#</th>
-                    <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207)] font-bold text-left whitespace-nowrap">Участник</th>
-                    {!isKnockout && <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207)] font-bold text-center whitespace-nowrap">Сумма</th>}
+                  <tr className="border-b border-white/10 align-bottom">
+                    <th className="w-10 px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-left whitespace-nowrap">#</th>
+                    <th className="w-[160px] px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-left whitespace-nowrap">Участник</th>
+                    {!isKnockout && <th className="w-[64px] px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap border-l border-white/[0.06]">Сумма</th>}
                     {judges.map(j => (
-                      <th key={j.id} className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207)] font-bold text-center whitespace-nowrap">{j.name}</th>
+                      <th key={j.id} title={j.name} className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap border-l border-white/[0.06] overflow-hidden">
+                        <div className="flex flex-col items-center gap-1.5">
+                          {j.avatar_url
+                            ? <img src={j.avatar_url} alt={j.name} className="w-9 h-9 rounded-full object-cover border-2 border-[#d94b6a]" />
+                            : <div className="w-9 h-9 rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">{j.name[0]}</div>
+                          }
+                          <span className="overflow-hidden text-ellipsis max-w-full">{truncateName(j.name)}</span>
+                        </div>
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {getSortedParticipants().map((p, idx) => (
                     <tr key={p.id} className={`border-b border-white/[0.05] last:border-b-0 ${BG}`}>
-                      <td className="px-3 py-2.5 text-[12px] text-[rgba(245,232,207)] font-bold w-8 align-middle">{idx + 1}</td>
+                      <td className="w-10 px-3 py-2.5 text-[12px] text-[rgba(245,232,207,0.3)] font-bold align-middle">{idx + 1}</td>
                       <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] uppercase whitespace-nowrap align-middle">{p.name}</td>
                       {!isKnockout && (
-                        <td className="px-3 py-2.5 text-[14px] font-bold text-[#f5e8cf] text-center min-w-[48px] align-middle">{totalScore(p.id)}</td>
+                        <td className="px-3 py-2.5 text-[14px] font-bold text-[#f5e8cf] text-center align-middle border-l border-white/[0.06]">{totalScore(p.id)}</td>
                       )}
                       {judges.map(j => {
                         const key = `${p.id}_${j.id}`;
@@ -258,41 +248,25 @@ export default function Tabelle() {
                         const val = entry?.score;
                         const hasComment = entry?.comment;
                         return (
-                          <td key={j.id} className={`px-3 py-2.5 relative min-w-[70px] text-center align-middle transition-colors duration-200 ${scoreColor(val, isKnockout)}`}>
+                          <td key={j.id} className={`px-3 py-2.5 relative text-center align-middle transition-colors duration-200 border-l border-white/[0.06] ${scoreColor(val, isKnockout)}`}>
                             {isKnockout ? (
-                              <div className="flex gap-1 justify-center">
-                                <button
-                                  onClick={() => saveScore(p.id, j.id, 1)}
-                                  className={`w-7 h-7 rounded-full border text-[13px] cursor-pointer flex items-center justify-center transition-all duration-150
-                                    ${val === 1 ? "bg-emerald-500/30 border-emerald-500 text-emerald-500" : `border-white/15 ${BG} text-[rgba(245,232,207,0.5)]`}`}
-                                >✓</button>
-                                <button
-                                  onClick={() => saveScore(p.id, j.id, 0)}
-                                  className={`w-7 h-7 rounded-full border text-[13px] cursor-pointer flex items-center justify-center transition-all duration-150
-                                    ${val === 0 ? "bg-[rgba(217,75,106)] border-[#d94b6a] text-[#d94b6a]" : `border-white/15 ${BG} text-[rgba(245,232,207,0.5)]`}`}
-                                >✕</button>
-                              </div>
+                              <span className="text-[15px] font-bold text-[#f5e8cf]">
+                                {val === 1 ? "✓" : val === 0 ? "✕" : "—"}
+                              </span>
                             ) : (
-                              <input
-                                type="number"
-                                min="0"
-                                max="10"
-                                value={val ?? ""}
-                                onChange={e => {
-                                  const v = e.target.value === "" ? null : Math.min(10, Math.max(0, Number(e.target.value)));
-                                  saveScore(p.id, j.id, v);
-                                }}
-                                className={`w-11 ${BG} border border-white/[0.15] rounded text-[#f5e8cf] font-[Montserrat] text-[13px] font-bold text-center p-1 outline-none transition-colors duration-150 focus:border-[#d94b6a] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
-                              />
+                              <span className="text-[14px] font-bold text-[#f5e8cf]">
+                                {val ?? "—"}
+                              </span>
                             )}
-                            <button
-                              onClick={() => setCommentModal({ participantId: p.id, judgeId: j.id, value: entry?.comment || "" })}
-                              title={hasComment || "Добавить комментарий"}
-                              className={`absolute top-1 right-1 w-[18px] h-[18px] rounded-full border-0 text-[10px] cursor-pointer flex items-center justify-center p-0 transition-all duration-150
-                                ${hasComment ? "text-[#f6d77a] bg-[rgba(246,215,122,0.12)]" : `text-[rgba(245,232,207,0.4)] ${BG} hover:bg-white/[0.15]`}`}
-                            >
-                              {hasComment ? "💬" : "+"}
-                            </button>
+                            {hasComment && (
+                              <button
+                                onClick={() => setCommentModal({ participant: p.name, judge: j.name, comment: entry.comment })}
+                                title="Показать комментарий"
+                                className="absolute top-1 right-1 w-[18px] h-[18px] rounded-full border-0 text-[10px] cursor-pointer flex items-center justify-center p-0 transition-all text-[#f6d77a] bg-[rgba(246,215,122,0.12)] hover:bg-[rgba(246,215,122,0.25)]"
+                              >
+                                💬
+                              </button>
+                            )}
                           </td>
                         );
                       })}
@@ -301,11 +275,47 @@ export default function Tabelle() {
                 </tbody>
               </table>
             </div>
+
+            {/* ── Фавориты судей (kompakt) ── */}
+            {!isKnockout && judges.some(j => [1,2,3].some(r => favorites[`${j.id}_${r}`])) && (
+              <div className="mt-8">
+                <div className="font-[Montserrat] text-[11px] tracking-[0.18em] uppercase text-[rgba(245,232,207,0.35)] mb-3">
+                  Личные фавориты судей
+                </div>
+                <div className="flex flex-col gap-2">
+                  {judges.map(j => {
+                    const hasFavs = [1,2,3].some(r => favorites[`${j.id}_${r}`]);
+                    if (!hasFavs) return null;
+                    return (
+                      <div key={j.id} className={`flex items-center gap-3 flex-wrap px-3.5 py-2.5 ${BG} border border-white/[0.12] rounded-lg`}>
+                        <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase min-w-[90px]">
+                          {truncateName(j.name)}
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {[1,2,3].map(rank => {
+                            const pid = favorites[`${j.id}_${rank}`];
+                            if (!pid) return null;
+                            const p = participants.find(x => x.id === pid);
+                            const c = RANK_COLORS[rank];
+                            return (
+                              <div key={rank} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${c.border} ${c.bg}`}>
+                                <span className={`font-[Montserrat] text-[11px] font-bold ${c.text}`}>{rank}</span>
+                                <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] uppercase">{p?.name ?? "—"}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>
 
-      {/* ── Kommentar-Modal ── */}
+      {/* ── Kommentar-Modal (nur lesen) ── */}
       {commentModal && (
         <>
           <div
@@ -313,28 +323,18 @@ export default function Tabelle() {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
           />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] bg-[rgba(10,10,12,0.98)] border border-white/[0.12] rounded-xl p-7 w-[min(92vw,440px)]">
-            <div className="font-[Montserrat] text-[13px] font-bold tracking-[0.1em] uppercase text-[#f5e8cf] mb-4">
-              Комментарий судьи
+            <div className="font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase text-[rgba(245,232,207,0.4)] mb-1">
+              {commentModal.judge} → {commentModal.participant}
             </div>
-            <textarea
-              value={commentModal.value}
-              onChange={e => setCommentModal(prev => ({ ...prev, value: e.target.value }))}
-              placeholder="Введите комментарий..."
-              rows={5}
-              className={`w-full ${BG} border border-white/[0.15] rounded-lg text-[#f5e8cf] font-[Montserrat] text-[13px] leading-[1.6] p-3 outline-none resize-y mb-4 focus:border-[#d94b6a] transition-colors`}
-            />
-            <div className="flex gap-2.5 justify-end">
+            <div className="font-[Montserrat] text-[13px] text-[#f5e8cf] leading-[1.6] mb-6 mt-3">
+              {commentModal.comment}
+            </div>
+            <div className="flex justify-end">
               <button
                 onClick={() => setCommentModal(null)}
                 className={`px-4 py-2 rounded-full border border-white/[0.12] ${BG} text-[rgba(245,232,207,0.5)] font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all hover:text-[#f5e8cf] hover:bg-white/[0.1]`}
               >
-                Отмена
-              </button>
-              <button
-                onClick={() => saveComment(commentModal.participantId, commentModal.judgeId, commentModal.value)}
-                className="px-4 py-2 rounded-full border border-[#d94b6a] bg-[rgba(217,75,106,0.15)] text-[#f5e8cf] font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all hover:bg-[rgba(217,75,106,0.3)]"
-              >
-                Сохранить
+                Закрыть
               </button>
             </div>
           </div>

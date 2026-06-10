@@ -22,7 +22,7 @@ const RANK_COLORS = {
 };
 
 export default function Judge() {
-  const { user, judgeId, signOut } = useAuth();
+  const { judgeId, signOut } = useAuth();
   const navigate  = useNavigate();
   const bgVideoRef = useRef(null);
 
@@ -32,12 +32,14 @@ export default function Judge() {
   const [myJudge,       setMyJudge]       = useState(null);
   const [scores,        setScores]        = useState({});
   const [favorites,     setFavorites]     = useState({});
-  const [allScored,     setAllScored]     = useState(false);
+  const [completed,     setCompleted]     = useState(false);   // habe ICH abgeschlossen?
   const [otherScores,   setOtherScores]   = useState({});
   const [otherFavs,     setOtherFavs]     = useState({});
   const [judges,        setJudges]        = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [commentModal,  setCommentModal]  = useState(null);
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  const [finishing,     setFinishing]     = useState(false);
 
   useEffect(() => {
     const video = bgVideoRef.current;
@@ -64,12 +66,14 @@ export default function Judge() {
       { data: allJudgesData },
       { data: myScoreData },
       { data: myFavData },
+      { data: myCompletion },
     ] = await Promise.all([
       supabase.from("participants").select("*").eq("round_id", roundId).order("order_num"),
       supabase.from("judges").select("*").eq("id", judgeId).single(),
       supabase.from("judges").select("*").order("order_num"),
       supabase.from("scores").select("*").eq("round_id", roundId).eq("judge_id", judgeId),
       supabase.from("favorites").select("*").eq("round_id", roundId).eq("judge_id", judgeId),
+      supabase.from("judge_completion").select("*").eq("round_id", roundId).eq("judge_id", judgeId).maybeSingle(),
     ]);
 
     const parts = participantData || [];
@@ -77,47 +81,47 @@ export default function Judge() {
     setMyJudge(judgeData);
     setJudges(allJudgesData || []);
 
-    // Eigene Scores
     const scoreMap = {};
     (myScoreData || []).forEach(s => {
       scoreMap[s.participant_id] = { score: s.score, comment: s.comment || "" };
     });
     setScores(scoreMap);
 
-    // Eigene Favoriten
     const favMap = {};
     (myFavData || []).forEach(f => { favMap[f.rank] = f.participant_id; });
     setFavorites(favMap);
 
-    // Geprüft ob alle bewertet
-    const scored = parts.filter(p => {
-      const val = scoreMap[p.id]?.score;
-      return val !== null && val !== undefined && val !== "";
-    }).length;
-    const isAllScored = scored >= parts.length && parts.length > 0;
-    setAllScored(isAllScored);
+    const isCompleted = myCompletion?.completed === true;
+    setCompleted(isCompleted);
 
-    // Andere Scores laden wenn fertig
-    if (isAllScored) {
-      const [{ data: allScoreData }, { data: allFavData }] = await Promise.all([
-        supabase.from("scores").select("*").eq("round_id", roundId),
-        supabase.from("favorites").select("*").eq("round_id", roundId),
-      ]);
-      const otherScoreMap = {};
-      (allScoreData || []).forEach(s => {
-        otherScoreMap[`${s.participant_id}_${s.judge_id}`] = { score: s.score, comment: s.comment || "" };
-      });
-      setOtherScores(otherScoreMap);
-      const otherFavMap = {};
-      (allFavData || []).forEach(f => { otherFavMap[`${f.judge_id}_${f.rank}`] = f.participant_id; });
-      setOtherFavs(otherFavMap);
+    // Andere Daten nur laden wenn ICH abgeschlossen habe
+    if (isCompleted) {
+      await loadOthers(roundId);
+    } else {
+      setOtherScores({});
+      setOtherFavs({});
     }
 
     setLoading(false);
   }
 
+  async function loadOthers(roundId) {
+    const [{ data: allScoreData }, { data: allFavData }] = await Promise.all([
+      supabase.from("scores").select("*").eq("round_id", roundId),
+      supabase.from("favorites").select("*").eq("round_id", roundId),
+    ]);
+    const otherScoreMap = {};
+    (allScoreData || []).forEach(s => {
+      otherScoreMap[`${s.participant_id}_${s.judge_id}`] = { score: s.score, comment: s.comment || "" };
+    });
+    setOtherScores(otherScoreMap);
+    const otherFavMap = {};
+    (allFavData || []).forEach(f => { otherFavMap[`${f.judge_id}_${f.rank}`] = f.participant_id; });
+    setOtherFavs(otherFavMap);
+  }
+
   function totalScore(participantId) {
-    if (!allScored) return null;
+    if (!completed) return null;
     return judges.reduce((sum, j) => {
       const val = otherScores[`${participantId}_${j.id}`]?.score;
       return sum + (val !== null && val !== undefined && val !== "" ? Number(val) : 0);
@@ -125,42 +129,17 @@ export default function Judge() {
   }
 
   async function saveScore(participantId, value) {
-    console.log("judgeId aus Auth:", judgeId);
-    console.log("participantId:", participantId);
-    console.log("activeRound:", activeRound);
+    if (completed) return; // gesperrt
     const existing = scores[participantId];
-    const newScores = { ...scores, [participantId]: { ...existing, score: value } };
-    setScores(newScores);
-
+    setScores(prev => ({ ...prev, [participantId]: { ...existing, score: value } }));
     await supabase.from("scores").upsert({
       round_id: activeRound, participant_id: participantId, judge_id: judgeId,
       score: value, comment: existing?.comment || "",
     }, { onConflict: "round_id,participant_id,judge_id" });
-
-    // Prüfen ob jetzt alle bewertet
-    const scored = participants.filter(p => {
-      const val = newScores[p.id]?.score;
-      return val !== null && val !== undefined && val !== "";
-    }).length;
-    if (scored >= participants.length && participants.length > 0) {
-      setAllScored(true);
-      // Andere Scores nachladen
-      const [{ data: allScoreData }, { data: allFavData }] = await Promise.all([
-        supabase.from("scores").select("*").eq("round_id", activeRound),
-        supabase.from("favorites").select("*").eq("round_id", activeRound),
-      ]);
-      const otherScoreMap = {};
-      (allScoreData || []).forEach(s => {
-        otherScoreMap[`${s.participant_id}_${s.judge_id}`] = { score: s.score, comment: s.comment || "" };
-      });
-      setOtherScores(otherScoreMap);
-      const otherFavMap = {};
-      (allFavData || []).forEach(f => { otherFavMap[`${f.judge_id}_${f.rank}`] = f.participant_id; });
-      setOtherFavs(otherFavMap);
-    }
   }
 
   async function saveComment(participantId, comment) {
+    if (completed) return;
     const existing = scores[participantId];
     setScores(prev => ({ ...prev, [participantId]: { ...prev[participantId], comment } }));
     await supabase.from("scores").upsert({
@@ -171,6 +150,7 @@ export default function Judge() {
   }
 
   async function saveFavorite(rank, participantId) {
+    if (completed) return;
     const current = favorites[rank];
     if (current === participantId) {
       setFavorites(prev => { const n = { ...prev }; delete n[rank]; return n; });
@@ -184,10 +164,23 @@ export default function Judge() {
     }, { onConflict: "round_id,judge_id,rank" });
   }
 
+  async function finishJudging() {
+    setFinishing(true);
+    await supabase.from("judge_completion").upsert({
+      round_id: activeRound, judge_id: judgeId, completed: true,
+    }, { onConflict: "round_id,judge_id" });
+    setCompleted(true);
+    setConfirmFinish(false);
+    await loadOthers(activeRound);
+    setFinishing(false);
+  }
+
   const scoredCount = participants.filter(p => {
     const val = scores[p.id]?.score;
     return val !== null && val !== undefined && val !== "";
   }).length;
+
+  const allScored = scoredCount >= participants.length && participants.length > 0;
 
   return (
     <>
@@ -273,9 +266,10 @@ export default function Judge() {
               </div>
             </div>
 
-            {allScored && (
+            {/* ── Status nach Abschluss ── */}
+            {completed && (
               <div className="mb-6 px-4 py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 font-[Montserrat] text-[12px] text-emerald-400 tracking-[0.08em]">
-                ✓ Вы оценили всех участников — результаты других судей теперь видны
+                ✓ Судейство завершено — ваши оценки заблокированы, результаты других судей теперь видны
               </div>
             )}
 
@@ -286,9 +280,9 @@ export default function Judge() {
                   <tr className="border-b border-white/10">
                     <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-left">#</th>
                     <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-left">Участник</th>
+                    {completed && <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center">Сумма</th>}
                     <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center">Моя оценка</th>
-                    {allScored && <th className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center">Сумма</th>}
-                    {allScored && judges.filter(j => j.id !== judgeId).map(j => (
+                    {completed && judges.filter(j => j.id !== judgeId).map(j => (
                       <th key={j.id} className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap">{j.name}</th>
                     ))}
                   </tr>
@@ -302,30 +296,36 @@ export default function Judge() {
                       <tr key={p.id} className={`border-b border-white/[0.05] last:border-b-0 ${BG}`}>
                         <td className="px-3 py-2.5 text-[12px] text-[rgba(245,232,207,0.3)] font-bold w-8 align-middle">{idx + 1}</td>
                         <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] uppercase whitespace-nowrap align-middle">{p.name}</td>
+                        {completed && (
+                          <td className="px-3 py-2.5 text-[14px] font-bold text-[#f5e8cf] text-center align-middle">{totalScore(p.id)}</td>
+                        )}
                         <td className={`px-3 py-2.5 relative text-center align-middle transition-colors duration-200 ${scoreColor(val)}`}>
                           <input
                             type="number"
                             min="0"
                             max="10"
                             value={val ?? ""}
+                            disabled={completed}
                             onChange={e => {
                               const v = e.target.value === "" ? null : Math.min(10, Math.max(0, Number(e.target.value)));
                               saveScore(p.id, v);
                             }}
-                            className={`w-11 ${BG} border border-white/[0.15] rounded text-[#f5e8cf] font-[Montserrat] text-[13px] font-bold text-center p-1 outline-none transition-colors focus:border-[#d94b6a] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+                            className={`w-11 ${BG} border border-white/[0.15] rounded text-[#f5e8cf] font-[Montserrat] text-[13px] font-bold text-center p-1 outline-none transition-colors focus:border-[#d94b6a] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none disabled:opacity-60 disabled:cursor-not-allowed`}
                           />
-                          <button
-                            onClick={() => setCommentModal({ participantId: p.id, value: entry?.comment || "" })}
-                            className={`absolute top-1 right-1 w-[18px] h-[18px] rounded-full border-0 text-[10px] cursor-pointer flex items-center justify-center p-0 transition-all
-                              ${hasComment ? "text-[#f6d77a] bg-[rgba(246,215,122,0.12)]" : `text-[rgba(245,232,207,0.4)] ${BG} hover:bg-white/[0.15]`}`}
-                          >
-                            {hasComment ? "💬" : "+"}
-                          </button>
+                          {!completed && (
+                            <button
+                              onClick={() => setCommentModal({ participantId: p.id, value: entry?.comment || "" })}
+                              className={`absolute top-1 right-1 w-[18px] h-[18px] rounded-full border-0 text-[10px] cursor-pointer flex items-center justify-center p-0 transition-all
+                                ${hasComment ? "text-[#f6d77a] bg-[rgba(246,215,122,0.12)]" : `text-[rgba(245,232,207,0.4)] ${BG} hover:bg-white/[0.15]`}`}
+                            >
+                              {hasComment ? "💬" : "+"}
+                            </button>
+                          )}
+                          {completed && hasComment && (
+                            <span className="absolute top-1 right-1 text-[10px]">💬</span>
+                          )}
                         </td>
-                        {allScored && (
-                          <td className="px-3 py-2.5 text-[14px] font-bold text-[#f5e8cf] text-center align-middle">{totalScore(p.id)}</td>
-                        )}
-                        {allScored && judges.filter(j => j.id !== judgeId).map(j => {
+                        {completed && judges.filter(j => j.id !== judgeId).map(j => {
                           const otherVal = otherScores[`${p.id}_${j.id}`]?.score;
                           return (
                             <td key={j.id} className={`px-3 py-2.5 text-center align-middle text-[13px] font-bold text-[#f5e8cf] ${scoreColor(otherVal)}`}>
@@ -358,15 +358,16 @@ export default function Judge() {
                         {participants.map(p => {
                           const isSelected = selectedId === p.id;
                           const otherRank = [1,2,3].filter(r => r !== rank).find(r => favorites[r] === p.id);
+                          const disabled = completed || !!otherRank;
                           return (
                             <button
                               key={p.id}
                               onClick={() => saveFavorite(rank, p.id)}
-                              disabled={!!otherRank}
+                              disabled={disabled}
                               className={`px-3 py-1 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] uppercase transition-all duration-150
                                 ${isSelected
                                   ? `${c.border} ${c.bg} ${c.text}`
-                                  : otherRank
+                                  : disabled
                                     ? "border-white/[0.06] text-[rgba(245,232,207,0.2)] cursor-not-allowed opacity-40 bg-transparent"
                                     : `border-white/[0.12] ${BG} text-[rgba(245,232,207,0.55)] hover:text-[#f5e8cf] hover:border-white/25 cursor-pointer`
                                 }`}
@@ -382,8 +383,30 @@ export default function Judge() {
               </div>
             </div>
 
-            {/* ── Andere Favoriten (nach Fertigstellung) ── */}
-            {allScored && (
+            {/* ── Завершить судейство ── */}
+            {!completed && (
+              <div className="mt-8">
+                {!allScored && (
+                  <div className="mb-3 px-4 py-3 rounded-xl border border-white/[0.1] bg-white/[0.03] font-[Montserrat] text-[12px] text-[rgba(245,232,207,0.5)] tracking-[0.06em] text-center">
+                    Оцените всех участников, чтобы завершить судейство ({scoredCount}/{participants.length})
+                  </div>
+                )}
+                <button
+                  onClick={() => setConfirmFinish(true)}
+                  disabled={!allScored}
+                  className={`w-full px-4 py-3 rounded-full border font-[Montserrat] text-[12px] font-bold tracking-[0.1em] uppercase transition-all
+                    ${allScored
+                      ? "border-emerald-500 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 cursor-pointer"
+                      : "border-white/[0.1] bg-white/[0.03] text-[rgba(245,232,207,0.25)] cursor-not-allowed"
+                    }`}
+                >
+                  Завершить судейство
+                </button>
+              </div>
+            )}
+
+            {/* ── Andere Favoriten (nach Abschluss) ── */}
+            {completed && (
               <div className="mt-6">
                 <div className="font-[Montserrat] text-[11px] tracking-[0.18em] uppercase text-[rgba(245,232,207,0.35)] mb-4">
                   Фавориты всех судей
@@ -419,6 +442,37 @@ export default function Judge() {
           </>
         )}
       </main>
+
+      {/* ── Bestätigungs-Modal "Завершить судейство" ── */}
+      {confirmFinish && (
+        <>
+          <div onClick={() => setConfirmFinish(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]" />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] bg-[rgba(10,10,12,0.98)] border border-white/[0.12] rounded-xl p-7 w-[min(92vw,440px)]">
+            <div className="font-[Montserrat] text-[14px] font-bold tracking-[0.08em] uppercase text-[#f5e8cf] mb-3">
+              Завершить судейство?
+            </div>
+            <p className="font-[Montserrat] text-[13px] text-[rgba(245,232,207,0.6)] leading-[1.6] mb-6">
+              После завершения ваши оценки будут заблокированы и станут видны другим. Изменить их больше нельзя.
+            </p>
+            <div className="flex gap-2.5 justify-end">
+              <button
+                onClick={() => setConfirmFinish(false)}
+                disabled={finishing}
+                className={`px-4 py-2 rounded-full border border-white/[0.12] ${BG} text-[rgba(245,232,207,0.5)] font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all hover:text-[#f5e8cf]`}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={finishJudging}
+                disabled={finishing}
+                className="px-4 py-2 rounded-full border border-emerald-500 bg-emerald-500/15 text-emerald-300 font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all hover:bg-emerald-500/25 disabled:opacity-50"
+              >
+                {finishing ? "..." : "Завершить"}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Kommentar-Modal ── */}
       {commentModal && (
