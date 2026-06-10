@@ -67,19 +67,50 @@ export default function Admin() {
 
 // ── Rounds Tab ────────────────────────────────────────────────────────────
 function RoundsTab() {
-  const [rounds,  setRounds]  = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [form,    setForm]    = useState({ name: "", type: "qualifying", extra_info: "", visual_url: "" });
-  const [editing, setEditing] = useState(null);
-  const [saving,  setSaving]  = useState(false);
+  const [rounds,    setRounds]    = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [form,      setForm]      = useState({ name: "", type: "qualifying", extra_info: "", visual_url: "" });
+  const [editing,   setEditing]   = useState(null);
+  const [saving,    setSaving]    = useState(false);
+  const [judges,    setJudges]    = useState([]);
+  const [roundJudges, setRoundJudges] = useState({}); // { round_id: Set(judge_id) }
+  const [expanded,  setExpanded]  = useState(null);    // round_id dessen Richter-Zuordnung offen ist
 
   useEffect(() => { loadRounds(); }, []);
 
   async function loadRounds() {
     setLoading(true);
-    const { data } = await supabase.from("rounds").select("*").order("order_num");
-    setRounds(data || []);
+    const [{ data: roundData }, { data: judgeData }, { data: rjData }] = await Promise.all([
+      supabase.from("rounds").select("*").order("order_num"),
+      supabase.from("judges").select("*").order("order_num"),
+      supabase.from("round_judges").select("*"),
+    ]);
+    setRounds(roundData || []);
+    setJudges(judgeData || []);
+    const map = {};
+    (rjData || []).forEach(rj => {
+      if (!map[rj.round_id]) map[rj.round_id] = new Set();
+      map[rj.round_id].add(rj.judge_id);
+    });
+    setRoundJudges(map);
     setLoading(false);
+  }
+
+  async function toggleJudge(roundId, judgeId) {
+    const assigned = roundJudges[roundId]?.has(judgeId);
+    // Optimistisch
+    setRoundJudges(prev => {
+      const map = { ...prev };
+      const set = new Set(map[roundId] || []);
+      if (assigned) set.delete(judgeId); else set.add(judgeId);
+      map[roundId] = set;
+      return map;
+    });
+    if (assigned) {
+      await supabase.from("round_judges").delete().eq("round_id", roundId).eq("judge_id", judgeId);
+    } else {
+      await supabase.from("round_judges").insert({ round_id: roundId, judge_id: judgeId });
+    }
   }
 
   async function save() {
@@ -100,6 +131,7 @@ function RoundsTab() {
     if (!confirm("Удалить раунд? Все оценки также будут удалены.")) return;
     await supabase.from("scores").delete().eq("round_id", id);
     await supabase.from("favorites").delete().eq("round_id", id);
+    await supabase.from("round_judges").delete().eq("round_id", id);
     await supabase.from("participants").delete().eq("round_id", id);
     await supabase.from("rounds").delete().eq("id", id);
     loadRounds();
@@ -152,22 +184,68 @@ function RoundsTab() {
 
       {loading ? <div className="admin-empty">Загрузка...</div> : rounds.length === 0 ? <div className="admin-empty">Раундов пока нет</div> : (
         <div className="admin-list">
-          {rounds.map((r, idx) => (
-            <div className="admin-list-item" key={r.id}>
-              <div className="admin-list-order">
-                <button className="admin-order-btn" onClick={() => moveUp(idx)} disabled={idx === 0}>↑</button>
-                <button className="admin-order-btn" onClick={() => moveDown(idx)} disabled={idx === rounds.length - 1}>↓</button>
+          {rounds.map((r, idx) => {
+            const assignedSet = roundJudges[r.id] || new Set();
+            const isOpen = expanded === r.id;
+            return (
+              <div key={r.id} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="admin-list-item">
+                  <div className="admin-list-order">
+                    <button className="admin-order-btn" onClick={() => moveUp(idx)} disabled={idx === 0}>↑</button>
+                    <button className="admin-order-btn" onClick={() => moveDown(idx)} disabled={idx === rounds.length - 1}>↓</button>
+                  </div>
+                  <div className="admin-list-info">
+                    <div className="admin-list-name">{r.name}</div>
+                    <div className="admin-list-meta">
+                      {r.type === "knockout" ? "Нокаут" : "Отборочный"} · {assignedSet.size} судей
+                    </div>
+                  </div>
+                  <div className="admin-list-actions">
+                    <button
+                      onClick={() => setExpanded(isOpen ? null : r.id)}
+                      className={`px-3 h-[30px] rounded-full border font-[Montserrat] text-[10px] font-bold tracking-[0.08em] uppercase cursor-pointer transition-all
+                        ${isOpen
+                          ? "border-[#d94b6a] bg-[rgba(217,75,106,0.12)] text-[#d94b6a]"
+                          : "border-white/[0.12] bg-[oklch(26.9%_0_0/0.8)] text-[rgba(245,232,207,0.5)] hover:text-[#f5e8cf]"
+                        }`}
+                    >
+                      Судьи
+                    </button>
+                    <button className="admin-action-btn edit" onClick={() => { setEditing(r.id); setForm({ name: r.name, type: r.type, extra_info: r.extra_info || "", visual_url: r.visual_url || "" }); }}>✎</button>
+                    <button className="admin-action-btn delete" onClick={() => deleteRound(r.id)}>✕</button>
+                  </div>
+                </div>
+
+                {isOpen && (
+                  <div className="admin-form" style={{ gap: 12 }}>
+                    <div className="admin-form-title">Судьи в раунде «{r.name}»</div>
+                    {judges.length === 0 ? (
+                      <div className="admin-list-meta">Сначала добавьте судей во вкладке «Судьи»</div>
+                    ) : (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {judges.map(j => {
+                          const on = assignedSet.has(j.id);
+                          return (
+                            <button
+                              key={j.id}
+                              onClick={() => toggleJudge(r.id, j.id)}
+                              className={`px-3 py-1.5 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] uppercase cursor-pointer transition-all
+                                ${on
+                                  ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-300"
+                                  : "border-white/[0.12] bg-[oklch(26.9%_0_0/0.8)] text-[rgba(245,232,207,0.5)] hover:text-[#f5e8cf] hover:border-white/25"
+                                }`}
+                            >
+                              {on ? "✓ " : "+ "}{j.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="admin-list-info">
-                <div className="admin-list-name">{r.name}</div>
-                <div className="admin-list-meta">{r.type === "knockout" ? "Нокаут" : "Отборочный"}{r.extra_info && ` · ${r.extra_info.slice(0, 40)}`}</div>
-              </div>
-              <div className="admin-list-actions">
-                <button className="admin-action-btn edit" onClick={() => { setEditing(r.id); setForm({ name: r.name, type: r.type, extra_info: r.extra_info || "", visual_url: r.visual_url || "" }); }}>✎</button>
-                <button className="admin-action-btn delete" onClick={() => deleteRound(r.id)}>✕</button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

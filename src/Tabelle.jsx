@@ -69,19 +69,32 @@ export default function Tabelle() {
     const [
       { data: roundData },
       { data: participantData },
-      { data: judgeData },
+      { data: rjData },
       { data: scoreData },
       { data: favData },
     ] = await Promise.all([
       supabase.from("rounds").select("*").eq("id", roundId).single(),
       supabase.from("participants").select("*").eq("round_id", roundId).order("order_num"),
-      supabase.from("judges").select("*").order("order_num"),
+      supabase.from("round_judges").select("judge_id").eq("round_id", roundId),
       supabase.from("scores").select("*").eq("round_id", roundId),
       supabase.from("favorites").select("*").eq("round_id", roundId),
     ]);
     setRoundInfo(roundData);
     setParticipants(participantData || []);
-    setJudges(judgeData || []);
+
+    // Nur Richter dieser Runde
+    const allowedJudgeIds = (rjData || []).map(r => r.judge_id);
+    let roundJudgesList = [];
+    if (allowedJudgeIds.length) {
+      const { data: jData } = await supabase
+        .from("judges")
+        .select("*")
+        .in("id", allowedJudgeIds)
+        .order("order_num");
+      roundJudgesList = jData || [];
+    }
+    setJudges(roundJudgesList);
+
     const scoreMap = {};
     (scoreData || []).forEach(s => {
       scoreMap[`${s.participant_id}_${s.judge_id}`] = { score: s.score, comment: s.comment || "" };

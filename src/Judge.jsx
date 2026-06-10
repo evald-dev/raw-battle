@@ -53,7 +53,25 @@ export default function Judge() {
   useEffect(() => { if (activeRound && judgeId) loadRoundData(activeRound); }, [activeRound, judgeId]);
 
   async function loadRounds() {
-    const { data } = await supabase.from("rounds").select("*").order("order_num");
+    // Nur Runden laden, denen dieser Richter zugeordnet ist
+    const { data: rjData } = await supabase
+      .from("round_judges")
+      .select("round_id")
+      .eq("judge_id", judgeId);
+    const allowedIds = (rjData || []).map(r => r.round_id);
+
+    if (allowedIds.length === 0) {
+      setRounds([]);
+      setActiveRound(null);
+      setLoading(false);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("rounds")
+      .select("*")
+      .in("id", allowedIds)
+      .order("order_num");
     setRounds(data || []);
     if (data?.length) setActiveRound(data[0].id);
   }
@@ -63,14 +81,14 @@ export default function Judge() {
     const [
       { data: participantData },
       { data: judgeData },
-      { data: allJudgesData },
+      { data: rjData },
       { data: myScoreData },
       { data: myFavData },
       { data: myCompletion },
     ] = await Promise.all([
       supabase.from("participants").select("*").eq("round_id", roundId).order("order_num"),
       supabase.from("judges").select("*").eq("id", judgeId).single(),
-      supabase.from("judges").select("*").order("order_num"),
+      supabase.from("round_judges").select("judge_id").eq("round_id", roundId),
       supabase.from("scores").select("*").eq("round_id", roundId).eq("judge_id", judgeId),
       supabase.from("favorites").select("*").eq("round_id", roundId).eq("judge_id", judgeId),
       supabase.from("judge_completion").select("*").eq("round_id", roundId).eq("judge_id", judgeId).maybeSingle(),
@@ -79,7 +97,19 @@ export default function Judge() {
     const parts = participantData || [];
     setParticipants(parts);
     setMyJudge(judgeData);
-    setJudges(allJudgesData || []);
+
+    // Nur Richter dieser Runde
+    const allowedJudgeIds = (rjData || []).map(r => r.judge_id);
+    let roundJudgesList = [];
+    if (allowedJudgeIds.length) {
+      const { data: jData } = await supabase
+        .from("judges")
+        .select("*")
+        .in("id", allowedJudgeIds)
+        .order("order_num");
+      roundJudgesList = jData || [];
+    }
+    setJudges(roundJudgesList);
 
     const scoreMap = {};
     (myScoreData || []).forEach(s => {
@@ -241,6 +271,10 @@ export default function Judge() {
         {loading ? (
           <div className="text-center py-16 font-[Montserrat] text-[13px] tracking-[0.1em] uppercase text-[rgba(245,232,207,0.25)]">
             Загрузка...
+          </div>
+        ) : rounds.length === 0 ? (
+          <div className="text-center py-16 font-[Montserrat] text-[13px] tracking-[0.1em] uppercase text-[rgba(245,232,207,0.25)]">
+            Вы пока не назначены ни на один раунд
           </div>
         ) : participants.length === 0 ? (
           <div className="text-center py-16 font-[Montserrat] text-[13px] tracking-[0.1em] uppercase text-[rgba(245,232,207,0.25)]">
