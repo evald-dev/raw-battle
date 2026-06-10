@@ -36,7 +36,7 @@
   padding: 8px 20px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
+  background: oklch(26.9% 0 0 / 0.8);
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -45,6 +45,10 @@
   color: rgba(245,232,207,0.45);
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.admin-tab:hover {
+  color: #f5e8cf;
 }
 
 .admin-tab.active {
@@ -69,8 +73,8 @@
 
 /* ── Form ── */
 .admin-form {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 10px;
   padding: 20px;
   display: flex;
@@ -113,8 +117,8 @@
 }
 
 .admin-input {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   color: #f5e8cf;
   font-family: "Montserrat", sans-serif;
@@ -173,7 +177,7 @@ select.admin-input {
   padding: 9px 20px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
+  background: oklch(26.9% 0 0 / 0.8);
   color: rgba(245,232,207,0.5);
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
@@ -199,14 +203,14 @@ select.admin-input {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px;
   transition: border-color 0.15s;
 }
 
 .admin-list-item:hover {
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.2);
 }
 
 .admin-list-order {
@@ -217,8 +221,8 @@ select.admin-input {
 }
 
 .admin-order-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 4px;
   color: rgba(245,232,207,0.4);
   font-size: 11px;
@@ -276,8 +280,8 @@ select.admin-input {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: oklch(26.9% 0 0 / 0.8);
   font-size: 14px;
   cursor: pointer;
   display: flex;
