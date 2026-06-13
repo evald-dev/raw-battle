@@ -144,7 +144,7 @@ export default function Tabelle() {
           onClick={() => window.location.href = "/raw-battle/"}
           className={`mb-7 inline-flex items-center gap-2 ${BG} border border-white/[0.1] rounded-full px-4 py-1.5 font-[Montserrat] text-[11px] font-bold tracking-[0.12em] uppercase text-[rgba(245,232,207,0.45)] cursor-pointer transition-colors duration-150 hover:text-[#f5e8cf] hover:bg-white/[0.1]`}
         >
-          ← zurück
+          ← назад
         </button>
 
         {/* ── Header ── */}

@@ -333,6 +333,14 @@ const navigate = useNavigate()
     >
       Admin
     </button>
+    <button
+      className="footer-modal-link"
+      type="button"
+      onClick={() => navigate("/judge")}
+    >
+      Judge
+    </button>
+
         </div>
       </footer>
 

@@ -35,7 +35,7 @@ export default function Admin() {
 
       <main className="admin-layout">
         <div className="admin-topbar">
-          <button className="tabelle-back" onClick={() => navigate("/")}>← zurück</button>
+          <button className="tabelle-back" onClick={() => navigate("/")}>← назад</button>
           <div className="admin-title">Admin Panel</div>
           <button
             onClick={signOut}

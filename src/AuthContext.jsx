@@ -18,10 +18,15 @@ export function AuthProvider({ children }) {
     });
 
     // Auth-State-Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadRole();
-      else { setRole(null); setJudgeId(null); setLoading(false); }
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+        if (session?.user) loadRole();
+        else setLoading(false);
+      } else if (event === "SIGNED_OUT") {
+        setRole(null); setJudgeId(null); setLoading(false);
+      }
+      // TOKEN_REFRESHED / USER_UPDATED: Rolle bleibt erhalten, nichts tun
     });
 
     return () => subscription.unsubscribe();
