@@ -5,10 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/raw-battle/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>raw-battle</title>
-    <script type="module" crossorigin src="/raw-battle/assets/index-CGWOcgJ-.js"></script>
-    <link rel="stylesheet" crossorigin href="/raw-battle/assets/index-COno9i6w.css">
+    <script>
+      const redirect = sessionStorage.getItem('spa_redirect');
+      if (redirect) {
+        sessionStorage.removeItem('spa_redirect');
+        window.history.replaceState(null, '', redirect);
+      }
+    </script>
+    <script type="module" crossorigin src="/raw-battle/assets/index-_ieaCzR8.js"></script>
+    <link rel="stylesheet" crossorigin href="/raw-battle/assets/index-Dim5oSqA.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
