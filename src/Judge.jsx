@@ -25,6 +25,7 @@ export default function Judge() {
   const { judgeId, signOut } = useAuth();
   const navigate  = useNavigate();
   const bgVideoRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [rounds,        setRounds]        = useState([]);
   const [activeRound,   setActiveRound]   = useState(null);
@@ -40,6 +41,7 @@ export default function Judge() {
   const [commentModal,  setCommentModal]  = useState(null);
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [finishing,     setFinishing]     = useState(false);
+  const [uploading,     setUploading]     = useState(false);
 
   useEffect(() => {
     const video = bgVideoRef.current;
@@ -205,6 +207,56 @@ export default function Judge() {
     setFinishing(false);
   }
 
+  async function uploadAvatar(e) {
+    const file = e.target.files?.[0];
+    if (!file || !judgeId) return;
+
+    // Nur Bilder, max 5 MB
+    if (!file.type.startsWith("image/")) {
+      alert("Пожалуйста, выберите изображение.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Файл слишком большой (макс. 5 МБ).");
+      return;
+    }
+
+    setUploading(true);
+
+    // Dateiname: judgeId + Zeitstempel (überschreibt nicht, eindeutig)
+    const ext = file.name.split(".").pop();
+    const path = `avatars/${judgeId}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      alert("Ошибка загрузки: " + uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    // Öffentliche URL holen
+    const { data: urlData } = supabase.storage.from("images").getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+
+    // In judges-Tabelle speichern
+    const { error: updateError } = await supabase
+      .from("judges")
+      .update({ avatar_url: publicUrl })
+      .eq("id", judgeId);
+
+    if (updateError) {
+      alert("Ошибка сохранения: " + updateError.message);
+      setUploading(false);
+      return;
+    }
+
+    setMyJudge(prev => ({ ...prev, avatar_url: publicUrl }));
+    setUploading(false);
+  }
+
   const scoredCount = participants.filter(p => {
     const val = scores[p.id]?.score;
     return val !== null && val !== undefined && val !== "";
@@ -230,18 +282,43 @@ export default function Judge() {
 
         {/* ── Header ── */}
         <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-          <div>
-            <div className="font-[Montserrat] text-[11px] tracking-[0.18em] uppercase text-[rgba(245,232,207,0.35)] mb-1">
-              0.49 — СЫРОЙ БАТЛ
+          <div className="flex items-center gap-4">
+            {/* Avatar mit Upload */}
+            <div className="relative flex-shrink-0">
+              {myJudge?.avatar_url
+                ? <img src={myJudge.avatar_url} alt={myJudge.name} className="w-16 h-16 rounded-full object-cover border-2 border-[#d94b6a]" />
+                : <div className="w-16 h-16 rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-2xl font-bold text-[#d94b6a] font-[Montserrat]">{myJudge?.name?.[0] ?? "?"}</div>
+              }
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                title="Изменить фото"
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#d94b6a] border-2 border-[#0f1014] flex items-center justify-center text-white text-[12px] cursor-pointer transition-all hover:bg-[#c43d5a] disabled:opacity-50"
+              >
+                {uploading ? "…" : "✎"}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={uploadAvatar}
+                className="hidden"
+              />
             </div>
-            <div className="font-[Montserrat] text-[22px] font-bold tracking-[0.04em] text-[#f5e8cf]">
-              Панель судьи
-            </div>
-            {myJudge && (
-              <div className="font-[Montserrat] text-[13px] text-[rgba(245,232,207,0.5)] mt-1">
-                {myJudge.name}
+
+            <div>
+              <div className="font-[Montserrat] text-[11px] tracking-[0.18em] uppercase text-[rgba(245,232,207,0.35)] mb-1">
+                0.49 — СЫРОЙ БАТЛ
               </div>
-            )}
+              <div className="font-[Montserrat] text-[22px] font-bold tracking-[0.04em] text-[#f5e8cf]">
+                Панель судьи
+              </div>
+              {myJudge && (
+                <div className="font-[Montserrat] text-[13px] text-[rgba(245,232,207,0.5)] mt-1">
+                  {myJudge.name}
+                </div>
+              )}
+            </div>
           </div>
           <button
             onClick={signOut}
