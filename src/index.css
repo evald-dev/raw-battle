@@ -509,6 +509,7 @@ body.panel-open .film-panel {
     0 0 18px rgba(255, 228, 160, 0.1);
 }
 
+
 .film-content a {
   color: #f6d77a;
   text-decoration: underline;
@@ -783,9 +784,9 @@ body.panel-open .film-panel {
   .film-content {
     font-size: clamp(12px, 1vw, 16px);
     padding-top: 9%;
-    padding-right: 20%;
+    padding-right: 10%;
     padding-bottom: 12%;
-    padding-left: 20%;
+    padding-left: 10%;
   }
 
   .film-close {
