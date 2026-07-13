@@ -4,8 +4,8 @@ import { supabase, getMyRole, getMyJudgeId } from "./supabase";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);
-  const [role,    setRole]    = useState(null);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const [judgeId, setJudgeId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,13 +18,17 @@ export function AuthProvider({ children }) {
     });
 
     // Auth-State-Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
         if (session?.user) loadRole();
         else setLoading(false);
       } else if (event === "SIGNED_OUT") {
-        setRole(null); setJudgeId(null); setLoading(false);
+        setRole(null);
+        setJudgeId(null);
+        setLoading(false);
       }
       // TOKEN_REFRESHED / USER_UPDATED: Rolle bleibt erhalten, nichts tun
     });
@@ -40,7 +44,10 @@ export function AuthProvider({ children }) {
   }
 
   async function signIn(email, password) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     return error;
   }
 
@@ -49,7 +56,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, role, judgeId, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ user, role, judgeId, loading, signIn, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );

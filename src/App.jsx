@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./styles.css";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 
 const DAY_VIDEO_SRC = "videos/day-screen.mp4";
 const NIGHT_VIDEO_SRC = "videos/night-screen.mp4";
@@ -10,18 +10,14 @@ function getTimeBasedVideoSrc() {
   return hour >= 10 ? DAY_VIDEO_SRC : NIGHT_VIDEO_SRC;
 }
 
-
-
 // ── main component ────────────────────────────────────────────────────────
 
 export default function App() {
-
-
   const bgVideoRef = useRef(null);
   const screenVideoRef = useRef(null);
   const filmScrollRef = useRef(null);
 
-const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [filmContent, setFilmContent] = useState(null);
@@ -36,14 +32,17 @@ const navigate = useNavigate()
       if (!video) return;
       const handler = () => {
         video.currentTime = 0.01;
-        video.play().catch(() => { });
+        video.play().catch(() => {});
       };
       video.addEventListener("ended", handler);
       return () => video.removeEventListener("ended", handler);
     };
     const cleanBg = loop(bgVideoRef.current);
     const cleanScreen = loop(screenVideoRef.current);
-    return () => { cleanBg?.(); cleanScreen?.(); };
+    return () => {
+      cleanBg?.();
+      cleanScreen?.();
+    };
   }, []);
 
   // setTimeBasedScreenVideo — on mount + every 60s
@@ -55,7 +54,7 @@ const navigate = useNavigate()
       if (video.getAttribute("src") !== targetSrc) {
         video.src = targetSrc;
         video.load();
-        video.play().catch(() => { });
+        video.play().catch(() => {});
       }
     };
     set();
@@ -129,7 +128,14 @@ const navigate = useNavigate()
     <>
       {/* ── video background ── */}
       <div className="video-bg" aria-hidden="true">
-        <video id="bgVideo" ref={bgVideoRef} autoPlay muted playsInline preload="auto">
+        <video
+          id="bgVideo"
+          ref={bgVideoRef}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+        >
           <source src="videos/tv-noise.mp4" type="video/mp4" />
         </video>
       </div>
@@ -137,14 +143,18 @@ const navigate = useNavigate()
       {/* ── top marquee ── */}
       <div className="top-marquee" aria-hidden="true">
         <div className="top-marquee-track">
-          0.49 GERMANY • СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД • 0.49 GERMANY • СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД •
+          0.49 GERMANY • СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД • 0.49 GERMANY •
+          СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД •
         </div>
       </div>
 
       {/* ── main layout ── */}
       <main className="layout">
-        <section className="sampler-stage" aria-label="кликабельный семплер" id="samplerStage">
-
+        <section
+          className="sampler-stage"
+          aria-label="кликабельный семплер"
+          id="samplerStage"
+        >
           {/* screen overlay */}
           <div
             className="overlay screen"
@@ -155,14 +165,28 @@ const navigate = useNavigate()
               "--h": "calc(var(--screen-h) / var(--img-h) * 100%)",
             }}
           >
-            <video id="screenVideo" ref={screenVideoRef} autoPlay muted playsInline aria-label="Экран видео" />
+            <video
+              id="screenVideo"
+              ref={screenVideoRef}
+              autoPlay
+              muted
+              playsInline
+              aria-label="Экран видео"
+            />
 
             <div className="screen-clock" aria-hidden="true">
               <span className="screen-clock-bg">88:88</span>
-              <span className="screen-clock-value" id="liveClock">{clock}</span>
+              <span className="screen-clock-value" id="liveClock">
+                {clock}
+              </span>
             </div>
 
-            <img className="screen-crack" src="images/screen-crack.png" alt="" aria-hidden="true" />
+            <img
+              className="screen-crack"
+              src="images/screen-crack.png"
+              alt=""
+              aria-hidden="true"
+            />
           </div>
 
           {/* ── taster: правила — x:37.7% y:43.3% ── */}
@@ -171,10 +195,11 @@ const navigate = useNavigate()
             style={{ "--x": "37.7%", "--y": "43.3%" }}
             aria-label="Правила"
             {...pointerHandlers("pravila")}
-            onClick={() => openFilm(
-              <span dangerouslySetInnerHTML={{
-                __html:
-                  `<u>ПРАВИЛА</u> <br>
+            onClick={() =>
+              openFilm(
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: `<u>ПРАВИЛА</u> <br>
 1. Принять участие могут любые <span style='color:#da6a1b;'>русскоязычные исполнители</span>, хоть проект и нацелен на участников из Германии<br><br>
 2. Для участия необходимо <span style='color:#da6a1b;'>сдать трек</span> на первый отборочный раунд. Трек должен соответствовать <span style='color:#da6a1b;'>следующим критериям:</span><br>
 <div style='margin-left:15px;'>
@@ -195,21 +220,30 @@ const navigate = useNavigate()
 - Участники набравшие наибольшее количество баллов <span style='color:#da6a1b;'>проходят в следующий раунд.</span><br>
 - Первые два раунда - отборочные, затем участники соревнуются в парах вплоть до финала.<br>
 - Треки на отборочные раунды оцениваются по 10-бальной системе.<br><br>
-Критерии оценки и концепт смотри здесь <a href='#' data-open-film='concept' style='color:#ce1919e0; text-decoration: underline;'>(ссылка)</a>.`
-              }} />
-            )}
+Критерии оценки и концепт смотри здесь <a href='#' data-open-film='concept' style='color:#ce1919e0; text-decoration: underline;'>(ссылка)</a>.`,
+                  }}
+                />,
+              )
+            }
           />
-          <span className="taster-label" style={{ "--x": "37.7%", "--y": "50%" }}>правила</span>
+          <span
+            className="taster-label"
+            style={{ "--x": "37.7%", "--y": "50%" }}
+          >
+            правила
+          </span>
 
           {/* ── taster: призовые — x:13.6% y:57.5% ── */}
-           <button
-      className={`taster-btn${pressedBtn === "prizy" ? " is-pressed" : ""}`}
-      style={{ "--x": "13.6%", "--y": "57.5%" }}
-      aria-label="Призовые"
-      {...pointerHandlers("prizy")}
-      onClick={() => openFilm(
-              <span dangerouslySetInnerHTML={{
-                __html: `<u>ПРИЗОВЫЕ</u><br><br>
+          <button
+            className={`taster-btn${pressedBtn === "prizy" ? " is-pressed" : ""}`}
+            style={{ "--x": "13.6%", "--y": "57.5%" }}
+            aria-label="Призовые"
+            {...pointerHandlers("prizy")}
+            onClick={() =>
+              openFilm(
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: `<u>ПРИЗОВЫЕ</u><br><br>
 0.49 - <span style='color:#da6a1b;'>не коммерческий проект</span> и полностью держится на энтузиазме организатора, который одновременно выступает дизайнером, администратором и меценатом проекта.<br><br>
 Призовой фонд здесь может показаться скромным - и это нормально для такого формата. Если кто-то хочет поддержать проект или стать спонсором - напишите организатору (он будет рад и благодарен).<br><br>
 Целью проекта является создание творческой площадки для развития участников, а также <span style='color:#da6a1b;'>поддержка андеграунд движения</span> в Германии. Призовые - это скорее бонус, а не основная цель.<br><br>
@@ -217,12 +251,18 @@ const navigate = useNavigate()
 1 место - 300€<br>
 2 место - 200€<br>
 3 место - 100€<br><br>
-Лучший трек раунда - 30€` }} />
-            )}
-    />
-    <span className="taster-label" style={{ "--x": "13.6%", "--y": "64.5%"}}>
-      призовые"
-    </span>
+Лучший трек раунда - 30€`,
+                  }}
+                />,
+              )
+            }
+          />
+          <span
+            className="taster-label"
+            style={{ "--x": "13.6%", "--y": "64.5%" }}
+          >
+            призовые"
+          </span>
 
           {/* ── taster: судьи — data-film-source="judgesContent" ── */}
           <button
@@ -232,7 +272,9 @@ const navigate = useNavigate()
             {...pointerHandlers("judges")}
             onClick={() => openFilm(judgesContent)}
           />
-          <span className="taster-label" style={{ "--x": "62%", "--y": "50%" }}>судьи</span>
+          <span className="taster-label" style={{ "--x": "62%", "--y": "50%" }}>
+            судьи
+          </span>
 
           {/* ── taster-btn-link telegram — x:13.6% y:78.5% ── */}
           <a
@@ -245,7 +287,12 @@ const navigate = useNavigate()
           >
             <img src="images/telegram-icon.png" alt="" aria-hidden="true" />
           </a>
-          <span className="taster-label" style={{ "--x": "14%", "--y": "85.3%", color: "#da6a1b" }}>telegram</span>
+          <span
+            className="taster-label"
+            style={{ "--x": "14%", "--y": "85.3%", color: "#da6a1b" }}
+          >
+            telegram
+          </span>
 
           {/* ── taster: концепт — data-film-source="conceptContent" ── */}
           <button
@@ -255,7 +302,12 @@ const navigate = useNavigate()
             {...pointerHandlers("koncept")}
             onClick={() => openFilm(conceptContent)}
           />
-          <span className="taster-label" style={{ "--x": "13.6%", "--y": "50%", color: "#da6a1b" }}>концепт</span>
+          <span
+            className="taster-label"
+            style={{ "--x": "13.6%", "--y": "50%", color: "#da6a1b" }}
+          >
+            концепт
+          </span>
 
           {/* ── taster: таблица — x:86.5% y:43.3% ── */}
           <button
@@ -265,7 +317,12 @@ const navigate = useNavigate()
             {...pointerHandlers("tabla")}
             onClick={() => navigate("/tabelle")}
           />
-          <span className="taster-label" style={{ "--x": "86.5%", "--y": "50%" }}>таблица</span>
+          <span
+            className="taster-label"
+            style={{ "--x": "86.5%", "--y": "50%" }}
+          >
+            таблица
+          </span>
 
           {/* ── sampler link zone ── */}
           <a
@@ -273,7 +330,12 @@ const navigate = useNavigate()
             href="https://t.me/bt049"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ "--x": "62%", "--y": "57.5%", "--w": "58.6%", "--h": "6.4%" }}
+            style={{
+              "--x": "62%",
+              "--y": "57.5%",
+              "--w": "58.6%",
+              "--h": "6.4%",
+            }}
             aria-label="Перейти на страницу батла"
           />
 
@@ -327,20 +389,19 @@ const navigate = useNavigate()
             Datenschutz
           </button>
           <button
-      className="footer-modal-link"
-      type="button"
-      onClick={() => navigate("/admin")}
-    >
-      Admin
-    </button>
-    <button
-      className="footer-modal-link"
-      type="button"
-      onClick={() => navigate("/judge")}
-    >
-      Judge
-    </button>
-
+            className="footer-modal-link"
+            type="button"
+            onClick={() => navigate("/admin")}
+          >
+            Admin
+          </button>
+          <button
+            className="footer-modal-link"
+            type="button"
+            onClick={() => navigate("/judge")}
+          >
+            Judge
+          </button>
         </div>
       </footer>
 
@@ -350,8 +411,17 @@ const navigate = useNavigate()
         id="infoModal"
         aria-hidden={!modalOpen}
       >
-        <div className="info-modal-backdrop" id="infoModalBackdrop" onClick={closeInfoModal} />
-        <div className="info-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <div
+          className="info-modal-backdrop"
+          id="infoModalBackdrop"
+          onClick={closeInfoModal}
+        />
+        <div
+          className="info-modal-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="infoModalTitle"
+        >
           <button
             className="info-modal-close"
             id="infoModalClose"
@@ -377,17 +447,23 @@ const judgesContent = (
       <div className="judge-info">
         <h3 className="judge-name">Tasay</h3>
         <p className="judge-text">
-          Здесь будет описание судьи Tasay: бэкграунд, опыт, подход к оценке, музыкальный стиль и вся нужная информация.
+          Здесь будет описание судьи Tasay: бэкграунд, опыт, подход к оценке,
+          музыкальный стиль и вся нужная информация.
         </p>
       </div>
     </article>
 
     <article className="judge-card">
-      <img className="judge-photo" src="images/judge-maxmannaz.jpg" alt="MAXMANNAZ" />
+      <img
+        className="judge-photo"
+        src="images/judge-maxmannaz.jpg"
+        alt="MAXMANNAZ"
+      />
       <div className="judge-info">
         <h3 className="judge-name">MAXMANNAZ</h3>
         <p className="judge-text">
-          Здесь будет описание судьи MAXMANNAZ: стиль, опыт, регалии и личный подход к оценке участников.
+          Здесь будет описание судьи MAXMANNAZ: стиль, опыт, регалии и личный
+          подход к оценке участников.
         </p>
       </div>
     </article>
@@ -395,9 +471,9 @@ const judgesContent = (
 );
 
 const conceptContent = (
-  <span dangerouslySetInnerHTML={{
-    __html:
-      `<u>КОНЦЕПТ</u><br><br>
+  <span
+    dangerouslySetInnerHTML={{
+      __html: `<u>КОНЦЕПТ</u><br><br>
     Проект создан как площадка для <span style='color:#da6a1b;'>андеграунд-исполнителей.</span><br>
     Здесь можно показать себя, познакомиться с другими участниками и попробовать новые идеи <span style='color:#da6a1b;'>без давления качества звука и продакшена.</span><br><br>
     Формат батла - <span style='color:#da6a1b;'>намеренно сырой.</span><br>
@@ -410,14 +486,15 @@ const conceptContent = (
       хочет экспериментировать<br>
       ценит неочевидные решения
     </span><br><br>
-    Если тебе есть что показать - записывай и отправляй трек на отбор. Если хочешь быть зрителем и просто следить за батлом - также вступай в группу телеграмм`
-  }} />
+    Если тебе есть что показать - записывай и отправляй трек на отбор. Если хочешь быть зрителем и просто следить за батлом - также вступай в группу телеграмм`,
+    }}
+  />
 );
 
 const impressumContent = (
-  <span dangerouslySetInnerHTML={{
-    __html:
-      `<h2 id="infoModalTitle">Impressum</h2>
+  <span
+    dangerouslySetInnerHTML={{
+      __html: `<h2 id="infoModalTitle">Impressum</h2>
 
     <p><strong>Angaben gemäß § 5 DDG</strong></p>
 
@@ -468,14 +545,15 @@ const impressumContent = (
     <p>
       Mit der Teilnahme erklären sich die Künstler damit einverstanden, dass ihre Künstlernamen und Battle-Ergebnisse
       im Rahmen des Projekts „0.49" veröffentlicht werden dürfen.
-    </p>`
-  }} />
+    </p>`,
+    }}
+  />
 );
 
 const datenschutzContent = (
-  <span dangerouslySetInnerHTML={{
-    __html:
-      `<h2 id="infoModalTitle">Datenschutzerklärung</h2>
+  <span
+    dangerouslySetInnerHTML={{
+      __html: `<h2 id="infoModalTitle">Datenschutzerklärung</h2>
 
     <p><strong>1. Verantwortlicher</strong></p>
     <p>
@@ -530,6 +608,7 @@ const datenschutzContent = (
       <a href="mailto:tasay.lxp@gmail.com">tasay.lxp@gmail.com</a>
     </p>
 
-    <p><strong>Stand:</strong> Mai 2026</p>`
-  }} />
+    <p><strong>Stand:</strong> Mai 2026</p>`,
+    }}
+  />
 );
