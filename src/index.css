@@ -168,7 +168,7 @@ body.panel-open .film-panel {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background-image: url("images/sampler-bg.png");
+  background-image: url("images/sampler-bg.webp");
   background-repeat: no-repeat;
   background-size: 100% 100%;
   background-position: 0 0;
