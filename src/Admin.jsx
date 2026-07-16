@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import { useAuth } from "./AuthContext";
 import "./styles.css";
 import "./admin.css";
-
-// ── Admin-Client mit service_role key (nur für User-Verwaltung) ───────────
-const supabaseAdmin = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_SERVICE_KEY,
-);
 
 const TABS = ["Раунды", "Участники", "Судьи", "Пользователи", "Видимость"];
 
@@ -830,7 +823,7 @@ function UsersTab() {
   async function loadData() {
     setLoading(true);
     const [{ data: userData }, { data: judgeData }] = await Promise.all([
-      supabaseAdmin.from("user_roles").select("*, judges(name)"),
+      supabase.from("user_roles").select("*, judges(name)"),
       supabase.from("judges").select("*").order("order_num"),
     ]);
     setUsers(userData || []);
@@ -847,29 +840,21 @@ function UsersTab() {
     setSaving(true);
     setError(null);
 
-    // User mit Admin-Client anlegen
-    const { data: userData, error: userError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email: form.email,
-        password: form.password,
-        email_confirm: true,
-      });
+    // User über Edge Function anlegen (Service-Key bleibt server-seitig)
+    const { data, error: fnError } = await supabase.functions.invoke(
+      "create-user",
+      {
+        body: {
+          email: form.email,
+          password: form.password,
+          role: form.role,
+          judge_id: form.judge_id || null,
+        },
+      },
+    );
 
-    if (userError) {
-      setError(userError.message);
-      setSaving(false);
-      return;
-    }
-
-    // Rolle zuweisen
-    const { error: roleError } = await supabaseAdmin.from("user_roles").insert({
-      user_id: userData.user.id,
-      role: form.role,
-      judge_id: form.judge_id || null,
-    });
-
-    if (roleError) {
-      setError(roleError.message);
+    if (fnError || data?.error) {
+      setError(data?.error || fnError?.message || "Ошибка при создании");
       setSaving(false);
       return;
     }
@@ -881,8 +866,16 @@ function UsersTab() {
 
   async function deleteUser(userId) {
     if (!confirm("Удалить пользователя?")) return;
-    await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
-    await supabaseAdmin.auth.admin.deleteUser(userId);
+    const { data, error: fnError } = await supabase.functions.invoke(
+      "delete-user",
+      {
+        body: { user_id: userId },
+      },
+    );
+    if (fnError || data?.error) {
+      alert(data?.error || fnError?.message || "Ошибка при удалении");
+      return;
+    }
     loadData();
   }
 
