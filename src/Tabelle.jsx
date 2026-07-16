@@ -29,11 +29,6 @@ const RANK_COLORS = {
 };
 
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────
-function truncateName(name, max = 12) {
-  if (!name) return "";
-  return name.length > max ? name.slice(0, max) + "…" : name;
-}
-
 function scoreColor(score, isKnockout) {
   if (score === null || score === undefined || score === "") return "";
   const n = Number(score);
@@ -45,7 +40,6 @@ function scoreColor(score, isKnockout) {
 }
 
 export default function Tabelle() {
-
   const [rounds, setRounds] = useState([]);
   const [activeRound, setActiveRound] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -152,7 +146,6 @@ export default function Tabelle() {
 
   return (
     <>
-
       <div className="top-marquee" aria-hidden="true">
         <div className="top-marquee-track">
           0.49 GERMANY • СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД • 0.49 GERMANY •
@@ -297,8 +290,7 @@ export default function Tabelle() {
                     {judges.map((j) => (
                       <th
                         key={j.id}
-                        title={j.name}
-                        className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap border-l border-white/[0.06] overflow-hidden"
+                        className="px-2 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center border-l border-white/[0.06]"
                       >
                         <div className="flex flex-col items-center gap-1.5">
                           {j.avatar_url ? (
@@ -312,8 +304,8 @@ export default function Tabelle() {
                               {j.name[0]}
                             </div>
                           )}
-                          <span className="overflow-hidden text-ellipsis max-w-full">
-                            {truncateName(j.name)}
+                          <span className="break-words leading-[1.25] max-w-full">
+                            {j.name}
                           </span>
                         </div>
                       </th>
@@ -401,7 +393,7 @@ export default function Tabelle() {
                           className={`flex items-center gap-3 flex-wrap px-3.5 py-2.5 ${BG} border border-white/[0.12] rounded-lg`}
                         >
                           <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase min-w-[90px]">
-                            {truncateName(j.name)}
+                            {j.name}
                           </div>
                           <div className="flex gap-2 flex-wrap">
                             {[1, 2, 3].map((rank) => {
