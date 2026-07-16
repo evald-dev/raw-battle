@@ -14,11 +14,6 @@ export default function Admin() {
 
   return (
     <>
-      <div className="video-bg" aria-hidden="true">
-        <video autoPlay muted playsInline preload="auto" loop>
-          <source src="videos/tv-noise.mp4" type="video/mp4" />
-        </video>
-      </div>
 
       <div className="top-marquee" aria-hidden="true">
         <div className="top-marquee-track">

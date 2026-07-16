@@ -16,8 +16,6 @@ function getTimeBasedVideoSrc() {
 
 export default function App() {
 
-
-  const bgVideoRef = useRef(null);
   const screenVideoRef = useRef(null);
   const filmScrollRef = useRef(null);
 
@@ -29,22 +27,6 @@ const navigate = useNavigate()
   const [modalContent, setModalContent] = useState(null);
   const [clock, setClock] = useState("00:00");
   const [pressedBtn, setPressedBtn] = useState(null);
-
-  // makeSeamlessLoop
-  useEffect(() => {
-    const loop = (video) => {
-      if (!video) return;
-      const handler = () => {
-        video.currentTime = 0.01;
-        video.play().catch(() => { });
-      };
-      video.addEventListener("ended", handler);
-      return () => video.removeEventListener("ended", handler);
-    };
-    const cleanBg = loop(bgVideoRef.current);
-    const cleanScreen = loop(screenVideoRef.current);
-    return () => { cleanBg?.(); cleanScreen?.(); };
-  }, []);
 
   // setTimeBasedScreenVideo — on mount + every 60s
   useEffect(() => {
@@ -127,12 +109,6 @@ const navigate = useNavigate()
 
   return (
     <>
-      {/* ── video background ── */}
-      <div className="video-bg" aria-hidden="true">
-        <video id="bgVideo" ref={bgVideoRef} autoPlay muted playsInline preload="auto">
-          <source src="videos/tv-noise.mp4" type="video/mp4" />
-        </video>
-      </div>
 
       {/* ── top marquee ── */}
       <div className="top-marquee" aria-hidden="true">

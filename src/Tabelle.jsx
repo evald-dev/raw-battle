@@ -45,7 +45,6 @@ function scoreColor(score, isKnockout) {
 }
 
 export default function Tabelle() {
-  const bgVideoRef = useRef(null);
 
   const [rounds, setRounds] = useState([]);
   const [activeRound, setActiveRound] = useState(null);
@@ -64,17 +63,6 @@ export default function Tabelle() {
   useEffect(() => {
     if (activeRound) loadRoundData(activeRound);
   }, [activeRound]);
-
-  useEffect(() => {
-    const video = bgVideoRef.current;
-    if (!video) return;
-    const handler = () => {
-      video.currentTime = 0.01;
-      video.play().catch(() => {});
-    };
-    video.addEventListener("ended", handler);
-    return () => video.removeEventListener("ended", handler);
-  }, []);
 
   async function loadRounds() {
     const { data } = await supabase
@@ -164,11 +152,6 @@ export default function Tabelle() {
 
   return (
     <>
-      <div className="video-bg" aria-hidden="true">
-        <video ref={bgVideoRef} autoPlay muted playsInline preload="auto">
-          <source src="videos/tv-noise.mp4" type="video/mp4" />
-        </video>
-      </div>
 
       <div className="top-marquee" aria-hidden="true">
         <div className="top-marquee-track">

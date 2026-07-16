@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
+import Layout from "./Layout";
 import App from "./App";
 import Tabelle from "./Tabelle";
 import Admin from "./Admin";
@@ -50,32 +51,35 @@ createRoot(document.getElementById("root")).render(
   <BrowserRouter basename="/raw-battle/">
     <AuthProvider>
       <Routes>
-        {/* Öffentlich */}
-        <Route path="/" element={<App />} />
-        <Route path="/login" element={<Login />} />
+        {/* Layout rendert das Hintergrundvideo einmal — Seiten kommen in den Outlet */}
+        <Route element={<Layout />}>
+          {/* Öffentlich */}
+          <Route path="/" element={<App />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Tabelle — öffentlich ODER eingeloggt, Sichtbarkeit wird in Tabelle.jsx geprüft */}
-        <Route path="/tabelle" element={<Tabelle />} />
+          {/* Tabelle — öffentlich ODER eingeloggt, Sichtbarkeit wird in Tabelle.jsx geprüft */}
+          <Route path="/tabelle" element={<Tabelle />} />
 
-        {/* Nur für Richter */}
-        <Route
-          path="/judge"
-          element={
-            <RequireJudge>
-              <Judge />
-            </RequireJudge>
-          }
-        />
+          {/* Nur für Richter */}
+          <Route
+            path="/judge"
+            element={
+              <RequireJudge>
+                <Judge />
+              </RequireJudge>
+            }
+          />
 
-        {/* Nur für Admin */}
-        <Route
-          path="/admin"
-          element={
-            <RequireAdmin>
-              <Admin />
-            </RequireAdmin>
-          }
-        />
+          {/* Nur für Admin */}
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <Admin />
+              </RequireAdmin>
+            }
+          />
+        </Route>
       </Routes>
     </AuthProvider>
   </BrowserRouter>,

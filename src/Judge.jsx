@@ -36,7 +36,6 @@ const RANK_COLORS = {
 export default function Judge() {
   const { judgeId, signOut } = useAuth();
   const navigate = useNavigate();
-  const bgVideoRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const [rounds, setRounds] = useState([]);
@@ -54,17 +53,6 @@ export default function Judge() {
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    const video = bgVideoRef.current;
-    if (!video) return;
-    const handler = () => {
-      video.currentTime = 0.01;
-      video.play().catch(() => {});
-    };
-    video.addEventListener("ended", handler);
-    return () => video.removeEventListener("ended", handler);
-  }, []);
 
   useEffect(() => {
     if (judgeId) loadRounds();
@@ -386,11 +374,6 @@ export default function Judge() {
 
   return (
     <>
-      <div className="video-bg" aria-hidden="true">
-        <video ref={bgVideoRef} autoPlay muted playsInline preload="auto">
-          <source src="videos/tv-noise.gif" type="video/mp4" />
-        </video>
-      </div>
 
       <div className="top-marquee" aria-hidden="true">
         <div className="top-marquee-track">
