@@ -35,21 +35,25 @@
 .admin-tab {
   padding: 8px 20px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: oklch(26.9% 0 0 / 0.8);
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(245,232,207,0.45);
+  color: rgba(245, 232, 207, 0.45);
   cursor: pointer;
   transition: all 0.15s;
 }
 
+.admin-tab:hover {
+  color: #f5e8cf;
+}
+
 .admin-tab.active {
   border-color: #d94b6a;
-  background: rgba(217,75,106,0.12);
+  background: rgba(217, 75, 106, 0.12);
   color: #f5e8cf;
 }
 
@@ -69,8 +73,8 @@
 
 /* ── Form ── */
 .admin-form {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   padding: 20px;
   display: flex;
@@ -84,7 +88,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(245,232,207,0.4);
+  color: rgba(245, 232, 207, 0.4);
 }
 
 .admin-form-row {
@@ -109,12 +113,12 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(245,232,207,0.35);
+  color: rgba(245, 232, 207, 0.35);
 }
 
 .admin-input {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   color: #f5e8cf;
   font-family: "Montserrat", sans-serif;
@@ -153,7 +157,7 @@ select.admin-input {
   padding: 9px 20px;
   border-radius: 999px;
   border: 1px solid #d94b6a;
-  background: rgba(217,75,106,0.15);
+  background: rgba(217, 75, 106, 0.15);
   color: #f5e8cf;
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
@@ -165,16 +169,23 @@ select.admin-input {
   white-space: nowrap;
 }
 
-.admin-btn-save:hover:not(:disabled) { background: rgba(217,75,106,0.3); }
-.admin-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
-.admin-btn-save.small { padding: 6px 12px; }
+.admin-btn-save:hover:not(:disabled) {
+  background: rgba(217, 75, 106, 0.3);
+}
+.admin-btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.admin-btn-save.small {
+  padding: 6px 12px;
+}
 
 .admin-btn-cancel {
   padding: 9px 20px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: transparent;
-  color: rgba(245,232,207,0.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: oklch(26.9% 0 0 / 0.8);
+  color: rgba(245, 232, 207, 0.5);
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
   font-weight: 700;
@@ -184,8 +195,12 @@ select.admin-input {
   transition: all 0.15s;
 }
 
-.admin-btn-cancel:hover { color: #f5e8cf; }
-.admin-btn-cancel.small { padding: 6px 12px; }
+.admin-btn-cancel:hover {
+  color: #f5e8cf;
+}
+.admin-btn-cancel.small {
+  padding: 6px 12px;
+}
 
 /* ── List ── */
 .admin-list {
@@ -199,14 +214,14 @@ select.admin-input {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   transition: border-color 0.15s;
 }
 
 .admin-list-item:hover {
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .admin-list-order {
@@ -217,10 +232,10 @@ select.admin-input {
 }
 
 .admin-order-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: oklch(26.9% 0 0 / 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
-  color: rgba(245,232,207,0.4);
+  color: rgba(245, 232, 207, 0.4);
   font-size: 11px;
   width: 22px;
   height: 22px;
@@ -233,7 +248,7 @@ select.admin-input {
 }
 
 .admin-order-btn:hover:not(:disabled) {
-  border-color: rgba(255,255,255,0.25);
+  border-color: rgba(255, 255, 255, 0.25);
   color: #f5e8cf;
 }
 
@@ -259,7 +274,7 @@ select.admin-input {
 .admin-list-meta {
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
-  color: rgba(245,232,207,0.35);
+  color: rgba(245, 232, 207, 0.35);
   margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
@@ -276,8 +291,8 @@ select.admin-input {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: oklch(26.9% 0 0 / 0.8);
   font-size: 14px;
   cursor: pointer;
   display: flex;
@@ -285,18 +300,18 @@ select.admin-input {
   justify-content: center;
   padding: 0;
   transition: all 0.15s;
-  color: rgba(245,232,207,0.5);
+  color: rgba(245, 232, 207, 0.5);
 }
 
 .admin-action-btn.edit:hover {
-  border-color: rgba(245,232,207,0.3);
+  border-color: rgba(245, 232, 207, 0.3);
   color: #f5e8cf;
 }
 
 .admin-action-btn.delete:hover {
   border-color: #d94b6a;
   color: #d94b6a;
-  background: rgba(217,75,106,0.1);
+  background: rgba(217, 75, 106, 0.1);
 }
 
 /* ── Judge Avatar ── */
@@ -313,8 +328,8 @@ select.admin-input {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(217,75,106,0.15);
-  border: 2px solid rgba(217,75,106,0.3);
+  background: rgba(217, 75, 106, 0.15);
+  border: 2px solid rgba(217, 75, 106, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -349,7 +364,7 @@ select.admin-input {
 .admin-empty {
   text-align: center;
   padding: 40px 0;
-  color: rgba(245,232,207,0.25);
+  color: rgba(245, 232, 207, 0.25);
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
   letter-spacing: 0.1em;

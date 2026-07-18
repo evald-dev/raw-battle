@@ -25,9 +25,13 @@
   gap: 8px;
   transition: color 0.15s;
 }
-.tabelle-back:hover { color: #f5e8cf; }
+.tabelle-back:hover {
+  color: #f5e8cf;
+}
 
-.tabelle-header { margin-bottom: 20px; }
+.tabelle-header {
+  margin-bottom: 20px;
+}
 
 .tabelle-title {
   font-size: 11px;
@@ -58,7 +62,7 @@
 .tabelle-round-visual {
   max-width: 200px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tabelle-round-extra {
@@ -111,22 +115,34 @@
   gap: 10px;
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
   font-family: "Montserrat", sans-serif;
 }
 
-.tabelle-podium-item.gold   { border-color: rgba(255, 200, 0, 0.3); }
-.tabelle-podium-item.silver { border-color: rgba(180, 180, 180, 0.3); }
-.tabelle-podium-item.bronze { border-color: rgba(180, 100, 30, 0.3); }
+.tabelle-podium-item.gold {
+  border-color: rgba(255, 200, 0, 0.3);
+}
+.tabelle-podium-item.silver {
+  border-color: rgba(180, 180, 180, 0.3);
+}
+.tabelle-podium-item.bronze {
+  border-color: rgba(180, 100, 30, 0.3);
+}
 
 .tabelle-podium-place {
   font-size: 18px;
   font-weight: 700;
 }
-.gold   .tabelle-podium-place { color: #ffc800; }
-.silver .tabelle-podium-place { color: #b4b4b4; }
-.bronze .tabelle-podium-place { color: #b4641e; }
+.gold .tabelle-podium-place {
+  color: #ffc800;
+}
+.silver .tabelle-podium-place {
+  color: #b4b4b4;
+}
+.bronze .tabelle-podium-place {
+  color: #b4641e;
+}
 
 .tabelle-podium-name {
   font-size: 13px;
@@ -150,8 +166,8 @@
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
   min-width: 80px;
 }
@@ -168,8 +184,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: rgba(217,75,106,0.15);
-  border: 2px solid rgba(217,75,106,0.3);
+  background: rgba(217, 75, 106, 0.15);
+  border: 2px solid rgba(217, 75, 106, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,7 +207,7 @@
 
 .tabelle-judge-progress {
   font-size: 10px;
-  color: rgba(245,232,207,0.4);
+  color: rgba(245, 232, 207, 0.4);
   font-family: "Montserrat", sans-serif;
 }
 
@@ -200,20 +216,27 @@
   margin-bottom: 16px;
   padding: 8px 18px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   background: transparent;
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(245,232,207,0.5);
+  color: rgba(245, 232, 207, 0.5);
   cursor: pointer;
   transition: all 0.15s;
   display: block;
 }
-.tabelle-sort-btn:hover { color: #f5e8cf; border-color: rgba(255,255,255,0.3); }
-.tabelle-sort-btn.active { border-color: #d94b6a; color: #d94b6a; background: rgba(217,75,106,0.1); }
+.tabelle-sort-btn:hover {
+  color: #f5e8cf;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.tabelle-sort-btn.active {
+  border-color: #d94b6a;
+  color: #d94b6a;
+  background: rgba(217, 75, 106, 0.1);
+}
 
 /* ── Tabelle ── */
 .tabelle-scroll {
@@ -244,7 +267,9 @@
 }
 
 .tabelle-table th:first-child,
-.tabelle-table th:nth-child(2) { text-align: left; }
+.tabelle-table th:nth-child(2) {
+  text-align: left;
+}
 
 .tabelle-table td {
   padding: 10px 12px;
@@ -253,12 +278,16 @@
   text-align: center;
 }
 
-.tabelle-table tr:last-child td { border-bottom: none; }
-.tabelle-table tr:hover td { background: rgba(255,255,255,0.02); }
+.tabelle-table tr:last-child td {
+  border-bottom: none;
+}
+.tabelle-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
 
 .tabelle-rank {
   font-size: 12px;
-  color: rgba(245,232,207,0.3);
+  color: rgba(245, 232, 207, 0.3);
   font-weight: 700;
   text-align: left !important;
   width: 32px;
@@ -288,15 +317,23 @@
   transition: background 0.2s;
 }
 
-.score-green  { background: rgba(29, 158, 117, 0.25) !important; }
-.score-red    { background: rgba(217, 75, 106, 0.25) !important; }
-.score-yellow { background: rgba(200, 180, 0, 0.2) !important; }
-.score-orange { background: rgba(217, 120, 30, 0.2) !important; }
+.score-green {
+  background: rgba(29, 158, 117, 0.25) !important;
+}
+.score-red {
+  background: rgba(217, 75, 106, 0.25) !important;
+}
+.score-yellow {
+  background: rgba(200, 180, 0, 0.2) !important;
+}
+.score-orange {
+  background: rgba(217, 120, 30, 0.2) !important;
+}
 
 .tabelle-score-input {
   width: 44px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   color: #f5e8cf;
   font-family: "Montserrat", sans-serif;
@@ -307,9 +344,13 @@
   outline: none;
   transition: border-color 0.15s;
 }
-.tabelle-score-input:focus { border-color: #d94b6a; }
+.tabelle-score-input:focus {
+  border-color: #d94b6a;
+}
 .tabelle-score-input::-webkit-inner-spin-button,
-.tabelle-score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.tabelle-score-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
 
 /* ── Knockout Buttons ── */
 .tabelle-knockout-btns {
@@ -322,9 +363,9 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.05);
-  color: rgba(245,232,207,0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(245, 232, 207, 0.5);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s;
@@ -354,8 +395,8 @@
   height: 18px;
   border-radius: 50%;
   border: none;
-  background: rgba(255,255,255,0.08);
-  color: rgba(245,232,207,0.4);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(245, 232, 207, 0.4);
   font-size: 10px;
   cursor: pointer;
   display: flex;
@@ -364,14 +405,19 @@
   padding: 0;
   transition: all 0.15s;
 }
-.tabelle-comment-btn:hover { background: rgba(255,255,255,0.15); }
-.tabelle-comment-btn.has-comment { color: #f6d77a; background: rgba(246,215,122,0.12); }
+.tabelle-comment-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.tabelle-comment-btn.has-comment {
+  color: #f6d77a;
+  background: rgba(246, 215, 122, 0.12);
+}
 
 /* ── Kommentar Modal ── */
 .tabelle-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   z-index: 200;
 }
@@ -382,8 +428,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 201;
-  background: rgba(10,10,12,0.98);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(10, 10, 12, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   padding: 28px;
   width: min(92vw, 440px);
@@ -401,8 +447,8 @@
 
 .tabelle-modal-textarea {
   width: 100%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   color: #f5e8cf;
   font-family: "Montserrat", sans-serif;
@@ -413,7 +459,9 @@
   resize: vertical;
   margin-bottom: 16px;
 }
-.tabelle-modal-textarea:focus { border-color: #d94b6a; }
+.tabelle-modal-textarea:focus {
+  border-color: #d94b6a;
+}
 
 .tabelle-modal-btns {
   display: flex;
@@ -435,18 +483,22 @@
 }
 
 .tabelle-modal-cancel {
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: transparent;
-  color: rgba(245,232,207,0.5);
+  color: rgba(245, 232, 207, 0.5);
 }
-.tabelle-modal-cancel:hover { color: #f5e8cf; }
+.tabelle-modal-cancel:hover {
+  color: #f5e8cf;
+}
 
 .tabelle-modal-save {
   border: 1px solid #d94b6a;
-  background: rgba(217,75,106,0.15);
+  background: rgba(217, 75, 106, 0.15);
   color: #f5e8cf;
 }
-.tabelle-modal-save:hover { background: rgba(217,75,106,0.3); }
+.tabelle-modal-save:hover {
+  background: rgba(217, 75, 106, 0.3);
+}
 
 /* ── Empty / Loading ── */
 .tabelle-empty {
