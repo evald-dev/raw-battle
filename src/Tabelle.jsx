@@ -248,7 +248,7 @@ export default function Tabelle() {
                     <span className={`text-lg font-bold ${placeColor}`}>
                       {place}
                     </span>
-                    <span className="text-[13px] font-bold text-[#f5e8cf] tracking-[0.06em]">
+                    <span className="text-[13px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase">
                       {item?.name}
                     </span>
                   </div>
@@ -290,17 +290,17 @@ export default function Tabelle() {
                     {judges.map((j) => (
                       <th
                         key={j.id}
-                        className="px-2 py-2.5 text-[10px] tracking-[0.12em] text-[rgba(245,232,207,0.35)] font-bold text-center border-l border-white/[0.06]"
+                        className="px-2 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center border-l border-white/[0.06]"
                       >
                         <div className="flex flex-col items-center gap-1.5">
                           {j.avatar_url ? (
                             <img
                               src={j.avatar_url}
                               alt={j.name}
-                              className="w-9 h-9 rounded-full object-cover border-2 border-[#d94b6a]"
+                              className="w-[47px] h-[47px] rounded-sm object-cover"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
+                            <div className="w-[47px] h-[47px] rounded-sm bg-[rgba(217,75,106,0.15)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
                               {j.name[0]}
                             </div>
                           )}
@@ -321,7 +321,7 @@ export default function Tabelle() {
                       <td className="w-10 px-3 py-2.5 text-[12px] text-[rgba(245,232,207,0.3)] font-bold align-middle">
                         {idx + 1}
                       </td>
-                      <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] whitespace-nowrap align-middle">
+                      <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] uppercase whitespace-nowrap align-middle">
                         {p.name}
                       </td>
                       {!isKnockout && (
@@ -392,7 +392,7 @@ export default function Tabelle() {
                           key={j.id}
                           className={`flex items-center gap-3 flex-wrap px-3.5 py-2.5 ${BG} border border-white/[0.12] rounded-lg`}
                         >
-                          <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] min-w-[90px]">
+                          <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase min-w-[90px]">
                             {j.name}
                           </div>
                           <div className="flex gap-2 flex-wrap">
@@ -411,7 +411,7 @@ export default function Tabelle() {
                                   >
                                     {rank}
                                   </span>
-                                  <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf]">
+                                  <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] uppercase">
                                     {p?.name ?? "—"}
                                   </span>
                                 </div>
@@ -436,7 +436,7 @@ export default function Tabelle() {
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200]"
           />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[201] bg-[rgba(10,10,12,0.98)] border border-white/[0.12] rounded-xl p-7 w-[min(92vw,440px)]">
-            <div className="font-[Montserrat] text-[11px] font-bold tracking-[0.1em] text-[rgba(245,232,207,0.4)] mb-1">
+            <div className="font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase text-[rgba(245,232,207,0.4)] mb-1">
               {commentModal.judge} → {commentModal.participant}
             </div>
             <div className="font-[Montserrat] text-[13px] text-[#f5e8cf] leading-[1.6] mb-6 mt-3">
