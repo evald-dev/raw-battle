@@ -34,7 +34,10 @@ const navigate = useNavigate()
       const video = screenVideoRef.current;
       if (!video) return;
       const targetSrc = getTimeBasedVideoSrc();
-      if (video.getAttribute("src") !== targetSrc) {
+      // Nur neu laden wenn sich die Quelle wirklich aendert (Tag <-> Nacht),
+      // sonst wuerde load() das laufende Video mittendrin unterbrechen.
+      const current = video.getAttribute("src");
+      if (current !== targetSrc) {
         video.src = targetSrc;
         video.load();
         video.play().catch(() => { });
@@ -131,7 +134,7 @@ const navigate = useNavigate()
               "--h": "calc(var(--screen-h) / var(--img-h) * 100%)",
             }}
           >
-            <video id="screenVideo" ref={screenVideoRef} autoPlay muted playsInline aria-label="Экран видео" />
+            <video id="screenVideo" ref={screenVideoRef} autoPlay muted loop playsInline aria-label="Экран видео" />
 
             <div className="screen-clock" aria-hidden="true">
               <span className="screen-clock-bg">88:88</span>
