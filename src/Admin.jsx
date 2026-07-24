@@ -495,8 +495,13 @@ function ParticipantsTab() {
         {rounds.map((r) => (
           <button
             key={r.id}
-            className={`tabelle-round-tab${activeRound === r.id ? " active" : ""}`}
             onClick={() => setActiveRound(r.id)}
+            className={`px-4 py-1.5 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all duration-150
+              ${
+                activeRound === r.id
+                  ? "border-[#d94b6a] bg-[rgba(217,75,106,0.12)] text-[#f5e8cf]"
+                  : "border-white/[0.12] bg-[oklch(26.9%_0_0/0.8)] text-[rgba(245,232,207,0.45)] hover:text-[#f5e8cf] hover:border-white/25"
+              }`}
           >
             {r.name}
           </button>
