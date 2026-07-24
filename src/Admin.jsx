@@ -361,7 +361,7 @@ function RoundsTab() {
                             <button
                               key={j.id}
                               onClick={() => toggleJudge(r.id, j.id)}
-                              className={`px-3 py-1.5 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] uppercase cursor-pointer transition-all
+                              className={`px-3 py-1.5 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] cursor-pointer transition-all
                                 ${
                                   on
                                     ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-300"

@@ -525,7 +525,7 @@ export default function Judge() {
                         .map((j) => (
                           <th
                             key={j.id}
-                            className="px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap"
+                            className="px-3 py-2.5 text-[10px] tracking-[0.12em] text-[rgba(245,232,207,0.35)] font-bold text-center whitespace-nowrap"
                           >
                             {j.name}
                           </th>
@@ -545,7 +545,7 @@ export default function Judge() {
                         <td className="px-3 py-2.5 text-[12px] text-[rgba(245,232,207,0.3)] font-bold w-8 align-middle">
                           {idx + 1}
                         </td>
-                        <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] uppercase whitespace-nowrap align-middle">
+                        <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] whitespace-nowrap align-middle">
                           {p.name}
                         </td>
                         {completed && (
@@ -658,7 +658,7 @@ export default function Judge() {
                               key={p.id}
                               onClick={() => saveFavorite(rank, p.id)}
                               disabled={disabled}
-                              className={`px-3 py-1 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] uppercase transition-all duration-150
+                              className={`px-3 py-1 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.06em] transition-all duration-150
                                 ${
                                   isSelected
                                     ? `${c.border} ${c.bg} ${c.text}`
@@ -735,7 +735,7 @@ export default function Judge() {
                             {j.name[0]}
                           </div>
                         )}
-                        <div className="font-[Montserrat] text-[12px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase">
+                        <div className="font-[Montserrat] text-[12px] font-bold text-[#f5e8cf] tracking-[0.06em]">
                           {j.name}
                         </div>
                       </div>
@@ -754,7 +754,7 @@ export default function Judge() {
                               >
                                 {rank}
                               </span>
-                              <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] uppercase">
+                              <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf]">
                                 {p?.name ?? "—"}
                               </span>
                             </div>
