@@ -1,15 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import "./styles.css";
-
 // ── Supabase ──────────────────────────────────────────────────────────────
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 // ── Hintergrundfarbe ──────────────────────────────────────────────────────
 const BG = "bg-[oklch(26.9%_0_0/0.8)]";
-
 const RANK_COLORS = {
   1: {
     border: "border-[rgba(255,200,0,0.5)]",
@@ -27,7 +24,6 @@ const RANK_COLORS = {
     bg: "bg-[rgba(180,100,30,0.08)]",
   },
 };
-
 // ── Hilfsfunktionen ───────────────────────────────────────────────────────
 function scoreColor(score, isKnockout) {
   if (score === null || score === undefined || score === "") return "";
@@ -38,7 +34,6 @@ function scoreColor(score, isKnockout) {
   if (n <= 8) return "bg-lime-500/25";
   return "bg-emerald-500/25";
 }
-
 export default function Tabelle() {
   const [rounds, setRounds] = useState([]);
   const [activeRound, setActiveRound] = useState(null);
@@ -48,16 +43,13 @@ export default function Tabelle() {
   const [favorites, setFavorites] = useState({}); // { judgeId_rank: participantId }
   const [roundInfo, setRoundInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sorted, setSorted] = useState(false);
   const [commentModal, setCommentModal] = useState(null);
-
   useEffect(() => {
     loadRounds();
   }, []);
   useEffect(() => {
     if (activeRound) loadRoundData(activeRound);
   }, [activeRound]);
-
   async function loadRounds() {
     const { data } = await supabase
       .from("rounds")
@@ -69,10 +61,8 @@ export default function Tabelle() {
     }
     setLoading(false);
   }
-
   async function loadRoundData(roundId) {
     setLoading(true);
-    setSorted(false);
     const [
       { data: roundData },
       { data: participantData },
@@ -92,7 +82,6 @@ export default function Tabelle() {
     ]);
     setRoundInfo(roundData);
     setParticipants(participantData || []);
-
     // Nur Richter dieser Runde
     const allowedJudgeIds = (rjData || []).map((r) => r.judge_id);
     let roundJudgesList = [];
@@ -105,7 +94,6 @@ export default function Tabelle() {
       roundJudgesList = jData || [];
     }
     setJudges(roundJudgesList);
-
     const scoreMap = {};
     (scoreData || []).forEach((s) => {
       scoreMap[`${s.participant_id}_${s.judge_id}`] = {
@@ -121,7 +109,6 @@ export default function Tabelle() {
     setFavorites(favMap);
     setLoading(false);
   }
-
   function totalScore(participantId) {
     return judges.reduce((sum, j) => {
       const val = scores[`${participantId}_${j.id}`]?.score;
@@ -131,19 +118,12 @@ export default function Tabelle() {
       );
     }, 0);
   }
-
-  function getSortedParticipants() {
-    if (!sorted) return participants;
-    return [...participants].sort(
-      (a, b) => totalScore(b.id) - totalScore(a.id),
-    );
-  }
-
   const isKnockout = roundInfo?.type === "knockout";
+  // Immer nach Punkten sortiert (ausser Knockout — dort Original-Reihenfolge).
   const ranked = [...participants].sort(
     (a, b) => totalScore(b.id) - totalScore(a.id),
   );
-
+  const displayParticipants = isKnockout ? participants : ranked;
   return (
     <>
       <div className="top-marquee" aria-hidden="true">
@@ -152,7 +132,6 @@ export default function Tabelle() {
           СЫРОЙ БАТЛ • ПЕРВЫЙ ОТБОРОЧНЫЙ РАУНД •
         </div>
       </div>
-
       <main className="relative z-10 max-w-[1100px] mx-auto px-4 pt-20 pb-20">
         {/* ── Zurück ── */}
         <button
@@ -161,7 +140,6 @@ export default function Tabelle() {
         >
           ← назад
         </button>
-
         {/* ── Header ── */}
         <div className="mb-5">
           <div className="font-[Montserrat] text-[11px] tracking-[0.18em] uppercase text-[rgba(245,232,207,0.35)] mb-1.5">
@@ -171,7 +149,6 @@ export default function Tabelle() {
             Таблица участников
           </div>
         </div>
-
         {/* ── Rundeninfo ── */}
         {roundInfo && (roundInfo.visual_url || roundInfo.extra_info) && (
           <div className="flex items-start gap-5 mb-6 flex-wrap">
@@ -189,7 +166,6 @@ export default function Tabelle() {
             )}
           </div>
         )}
-
         {/* ── Runden-Tabs ── */}
         <div className="flex gap-2 mb-6 flex-wrap">
           {rounds.map((r) => (
@@ -207,7 +183,6 @@ export default function Tabelle() {
             </button>
           ))}
         </div>
-
         {loading ? (
           <div className="text-center py-16 font-[Montserrat] text-[13px] tracking-[0.1em] uppercase text-[rgba(245,232,207,0.25)]">
             Загрузка...
@@ -248,29 +223,13 @@ export default function Tabelle() {
                     <span className={`text-lg font-bold ${placeColor}`}>
                       {place}
                     </span>
-                    <span className="text-[13px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase">
+                    <span className="text-[13px] font-bold text-[#f5e8cf] tracking-[0.06em]">
                       {item?.name}
                     </span>
                   </div>
                 ))}
               </div>
             )}
-
-            {/* ── Sortier-Button ── */}
-            {!isKnockout && (
-              <button
-                onClick={() => setSorted((s) => !s)}
-                className={`mb-4 px-4 py-2 rounded-full border font-[Montserrat] text-[11px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all duration-150 block
-                  ${
-                    sorted
-                      ? "border-[#d94b6a] text-[#d94b6a] bg-[rgba(217,75,106,0.1)]"
-                      : `border-white/[0.15] text-[rgba(245,232,207,0.5)] ${BG} hover:text-[#f5e8cf] hover:border-white/30 hover:bg-white/[0.1]`
-                  }`}
-              >
-                {sorted ? "✕ Сортировка отключена" : "↓ Сортировать по баллам"}
-              </button>
-            )}
-
             {/* ── Tabelle ── */}
             <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
               <table
@@ -300,10 +259,10 @@ export default function Tabelle() {
                             <img
                               src={j.avatar_url}
                               alt={j.name}
-                              className="w-9 h-9 rounded-full object-cover border-2 border-[#d94b6a]"
+                              className="w-[47px] h-[47px] rounded-sm object-cover"
                             />
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
+                            <div className="w-[47px] h-[47px] rounded-sm bg-[rgba(217,75,106,0.15)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
                               {j.name[0]}
                             </div>
                           )}
@@ -316,7 +275,7 @@ export default function Tabelle() {
                   </tr>
                 </thead>
                 <tbody>
-                  {getSortedParticipants().map((p, idx) => (
+                  {displayParticipants.map((p, idx) => (
                     <tr
                       key={p.id}
                       className={`border-b border-white/[0.05] last:border-b-0 ${BG}`}
@@ -324,7 +283,7 @@ export default function Tabelle() {
                       <td className="w-10 px-3 py-2.5 text-[12px] text-[rgba(245,232,207,0.3)] font-bold align-middle">
                         {idx + 1}
                       </td>
-                      <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] uppercase whitespace-nowrap align-middle">
+                      <td className="px-3 py-2.5 text-[13px] font-bold text-[#f5e8cf] tracking-[0.04em] whitespace-nowrap align-middle">
                         {p.name}
                       </td>
                       {!isKnockout && (
@@ -374,7 +333,6 @@ export default function Tabelle() {
                 </tbody>
               </table>
             </div>
-
             {/* ── Фавориты судей (kompakt) ── */}
             {!isKnockout &&
               judges.some((j) =>
@@ -395,7 +353,7 @@ export default function Tabelle() {
                           key={j.id}
                           className={`flex items-center gap-3 flex-wrap px-3.5 py-2.5 ${BG} border border-white/[0.12] rounded-lg`}
                         >
-                          <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] uppercase min-w-[90px]">
+                          <div className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] tracking-[0.06em] min-w-[90px]">
                             {j.name}
                           </div>
                           <div className="flex gap-2 flex-wrap">
@@ -414,7 +372,7 @@ export default function Tabelle() {
                                   >
                                     {rank}
                                   </span>
-                                  <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf] uppercase">
+                                  <span className="font-[Montserrat] text-[11px] font-bold text-[#f5e8cf]">
                                     {p?.name ?? "—"}
                                   </span>
                                 </div>
@@ -430,7 +388,6 @@ export default function Tabelle() {
           </>
         )}
       </main>
-
       {/* ── Kommentar-Modal (nur lesen) ── */}
       {commentModal && (
         <>
@@ -456,7 +413,6 @@ export default function Tabelle() {
           </div>
         </>
       )}
-
       <footer className="site-footer">
         <div className="site-footer-links">
           <button
