@@ -44,10 +44,16 @@ export function AuthProvider({ children }) {
   }
 
   async function signIn(email, password) {
+    setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    if (error) {
+      setLoading(false);
+    }
+    // Bei Erfolg bleibt loading=true, bis onAuthStateChange (SIGNED_IN)
+    // die Rolle geladen hat. So navigiert Login erst wenn role bereit ist.
     return error;
   }
 

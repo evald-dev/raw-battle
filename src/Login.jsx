@@ -1,35 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import { getMyRole } from "./supabase";
 import "./styles.css";
 
 export default function Login() {
-  const { signIn } = useAuth();
+  const { signIn, user, role, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Sobald User eingeloggt ist UND die Rolle geladen wurde, weiterleiten.
+  // Das laeuft ueber den AuthContext statt direkt nach signIn — dadurch
+  // gibt es keinen Timing-Konflikt und der Login klappt beim ersten Versuch.
+  useEffect(() => {
+    if (authLoading) return;          // Rolle laedt noch
+    if (!user) return;                // nicht eingeloggt
+    if (role === "admin") navigate("/admin", { replace: true });
+    else if (role === "judge") navigate("/judge", { replace: true });
+    else if (role !== null) navigate("/", { replace: true });
+  }, [user, role, authLoading, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
     const err = await signIn(email, password);
-    console.log("signIn error:", err);
     if (err) {
       setError("Неверный email или пароль");
-      setLoading(false);
+      setSubmitting(false);
       return;
     }
-    const role = await getMyRole();
-    console.log("role nach login:", role);
-    setLoading(false);
-    if (role === "admin") navigate("/admin");
-    else if (role === "judge") navigate("/judge");
-    else navigate("/");
+    // Kein manuelles Navigieren hier — der useEffect oben uebernimmt,
+    // sobald der AuthContext user + role gesetzt hat.
   }
 
   return (
@@ -98,10 +103,10 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={submitting}
               className="mt-2 px-4 py-2.5 rounded-full border border-[#d94b6a] bg-[rgba(217,75,106,0.15)] text-[#f5e8cf] font-[Montserrat] text-[12px] font-bold tracking-[0.1em] uppercase cursor-pointer transition-all hover:bg-[rgba(217,75,106,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Загрузка..." : "Войти"}
+              {submitting ? "Загрузка..." : "Войти"}
             </button>
           </form>
 
