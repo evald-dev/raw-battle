@@ -273,7 +273,10 @@ export default function Tabelle() {
 
             {/* ── Tabelle ── */}
             <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
-              <table className="w-full border-collapse table-fixed font-[Montserrat] min-w-[500px]">
+              <table
+                className="w-full border-collapse table-fixed font-[Montserrat]"
+                style={{ minWidth: `${264 + judges.length * 80}px` }}
+              >
                 <thead>
                   <tr className="border-b border-white/10 align-bottom">
                     <th className="w-10 px-3 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-left whitespace-nowrap">
@@ -290,17 +293,17 @@ export default function Tabelle() {
                     {judges.map((j) => (
                       <th
                         key={j.id}
-                        className="px-2 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center border-l border-white/[0.06]"
+                        className="min-w-[80px] px-2 py-2.5 text-[10px] tracking-[0.12em] uppercase text-[rgba(245,232,207,0.35)] font-bold text-center border-l border-white/[0.06]"
                       >
                         <div className="flex flex-col items-center gap-1.5">
                           {j.avatar_url ? (
                             <img
                               src={j.avatar_url}
                               alt={j.name}
-                              className="w-[47px] h-[47px] rounded-sm object-cover"
+                              className="w-9 h-9 rounded-full object-cover border-2 border-[#d94b6a]"
                             />
                           ) : (
-                            <div className="w-[47px] h-[47px] rounded-sm bg-[rgba(217,75,106,0.15)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
+                            <div className="w-9 h-9 rounded-full bg-[rgba(217,75,106,0.15)] border-2 border-[rgba(217,75,106,0.3)] flex items-center justify-center text-[13px] font-bold text-[#d94b6a]">
                               {j.name[0]}
                             </div>
                           )}
